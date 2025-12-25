@@ -225,7 +225,7 @@ function collectCategories(items) {
         })
         .filter(Boolean);
 
-    return Array.from(new Set(categories)).slice(0, 6);
+    return Array.from(new Set(categories));
 }
 
 function updateActiveFilterUI() {

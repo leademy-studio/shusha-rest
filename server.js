@@ -57,7 +57,7 @@ app.get("/api/catalog", async (_, res) => {
             priceCategoryId
         });
 
-        const items = simplifyMenu(menu, organizationId).slice(0, 12);
+        const items = simplifyMenu(menu, organizationId);
 
         return res.json({
             items,
