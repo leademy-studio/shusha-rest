@@ -25,6 +25,10 @@ app.get("/", (_, res) => {
     res.sendFile(path.join(__dirname, "index.html"));
 });
 
+app.get("/catalog", (_, res) => {
+    res.sendFile(path.join(__dirname, "catalog.html"));
+});
+
 app.get("/api/catalog", async (_, res) => {
     try {
         if (!IIKO_API_LOGIN) {

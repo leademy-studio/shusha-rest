@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shusha Delivery — Каталог</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/popular.css">
+    <link rel="stylesheet" href="assets/css/catalog.css">
+</head>
+<body>
+    <main>
+        <section class="catalog-hero" aria-labelledby="catalog-title">
+            <div class="container">
+                <nav class="breadcrumb" aria-label="breadcrumb" itemscope itemtype="https://schema.org/BreadcrumbList">
+                    <ol class="breadcrumb__list">
+                        <li class="breadcrumb__item" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                            <a href="/" itemprop="item">
+                                <span itemprop="name">Главная</span>
+                            </a>
+                            <meta itemprop="position" content="1">
+                        </li>
+                        <li class="breadcrumb__item breadcrumb__item--active" aria-current="page" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                            <span itemprop="name">Каталог</span>
+                            <meta itemprop="position" content="2">
+                        </li>
+                    </ol>
+                </nav>
+
+                <div class="catalog-hero__heading">
+                    <div class="catalog-hero__title-group">
+                        <p class="catalog-hero__eyebrow">Обновлено сегодня</p>
+                        <h1 class="catalog-hero__title" id="catalog-title">Каталог доставки Shusha</h1>
+                        <p class="catalog-hero__subtitle">
+                            Свежие роллы, мангальные блюда и десерты с бесплатной доставкой в пределах МКАД.
+                            Собираем под заказ и привозим горячим за 25 минут.
+                        </p>
+                    </div>
+                    <div class="catalog-hero__meta">
+                        <span class="catalog-hero__pill">Доставка ~25 минут</span>
+                        <span class="catalog-hero__pill catalog-hero__pill--ghost">Без доплат в пределах МКАД</span>
+                    </div>
+                </div>
+
+                <div class="catalog-hero__panel">
+                    <div class="catalog-hero__toolbar">
+                        <p class="catalog-hero__status" id="catalog-status" aria-live="polite">Загружаем меню...</p>
+                        <div class="catalog-hero__filters" id="catalog-filters" role="group" aria-label="Категории каталога"></div>
+                    </div>
+                    <div class="catalog-grid popular__grid" id="catalog-grid" role="list"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script src="assets/js/script.js" defer></script>
+    <script src="assets/js/catalog.js" defer></script>
+</body>
+</html>

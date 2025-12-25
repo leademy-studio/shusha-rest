@@ -24,48 +24,50 @@ const sliderSteps = Array.from(document.querySelectorAll(".hero__slider-step"));
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const popularGrid = document.querySelector(".popular__grid");
 
-let currentIndex = 0;
-let autoRotate;
+if (heroPanel && titleElement && descriptionElement && sliderSteps.length) {
+    let currentIndex = 0;
+    let autoRotate;
 
-function setSlide(index) {
-    currentIndex = (index + slides.length) % slides.length;
+    const setSlide = (index) => {
+        currentIndex = (index + slides.length) % slides.length;
+        const { title, description } = slides[currentIndex];
 
-    const { title, description } = slides[currentIndex];
-    heroPanel.dataset.activeSlide = String(currentIndex);
-    titleElement.textContent = title;
-    descriptionElement.textContent = description;
+        heroPanel.dataset.activeSlide = String(currentIndex);
+        titleElement.textContent = title;
+        descriptionElement.textContent = description;
 
-    sliderSteps.forEach((step, stepIndex) => {
-        step.classList.toggle("hero__slider-step--active", stepIndex === currentIndex);
-        step.setAttribute("aria-pressed", stepIndex === currentIndex ? "true" : "false");
+        sliderSteps.forEach((step, stepIndex) => {
+            step.classList.toggle("hero__slider-step--active", stepIndex === currentIndex);
+            step.setAttribute("aria-pressed", stepIndex === currentIndex ? "true" : "false");
+        });
+    };
+
+    const startAutoRotate = () => {
+        if (prefersReducedMotion) {
+            return;
+        }
+
+        autoRotate = window.setInterval(() => {
+            setSlide(currentIndex + 1);
+        }, 6500);
+    };
+
+    const resetAutoRotate = () => {
+        window.clearInterval(autoRotate);
+        startAutoRotate();
+    };
+
+    sliderSteps.forEach((step) => {
+        step.addEventListener("click", () => {
+            const targetIndex = Number(step.dataset.slide);
+            setSlide(targetIndex);
+            resetAutoRotate();
+        });
     });
-}
 
-function startAutoRotate() {
-    if (prefersReducedMotion) {
-        return;
-    }
-
-    autoRotate = window.setInterval(() => {
-        setSlide(currentIndex + 1);
-    }, 6500);
-}
-
-function resetAutoRotate() {
-    window.clearInterval(autoRotate);
+    setSlide(0);
     startAutoRotate();
 }
-
-sliderSteps.forEach((step) => {
-    step.addEventListener("click", () => {
-        const targetIndex = Number(step.dataset.slide);
-        setSlide(targetIndex);
-        resetAutoRotate();
-    });
-});
-
-setSlide(0);
-startAutoRotate();
 
 async function fetchCatalog() {
     const response = await fetch("/api/catalog");
