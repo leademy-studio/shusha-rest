@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shusha Delivery — Hero</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/hero.css">
+</head>
+<body>
+    <main>
+        <section class="hero">
+            <div class="container">
+                <article class="hero__panel" data-active-slide="0">
+                    <div class="hero__content">
+                        <p class="hero__eyebrow">Доставка для города</p>
+                        <h1 class="hero__title hero__title--static" id="hero-title-static">Свежие роллы за 25 минут</h1>
+                        <p class="hero__title hero__title--dynamic" id="hero-title" role="heading" aria-level="2" aria-live="polite">
+                            Свежие роллы за 25 минут
+                        </p>
+                        <p class="hero__description" id="hero-description">
+                            Сборка под заказ, аккуратная упаковка и бесплатная доставка в пределах МКАД.
+                        </p>
+                        <div class="hero__actions">
+                            <button class="hero__button" type="button">Смотреть меню</button>
+                            <button class="hero__link" type="button">Акции недели</button>
+                        </div>
+                    </div>
+                    <div class="hero__badge" aria-hidden="true">
+                        <div class="hero__badge-text">Место силы вкуса</div>
+                    </div>
+                    <div class="hero__slider" role="group" aria-label="Выбор предложения">
+                        <div class="hero__slider-bar">
+                            <button class="hero__slider-step hero__slider-step--active" type="button" data-slide="0" aria-label="Свежие роллы"></button>
+                            <button class="hero__slider-step" type="button" data-slide="1" aria-label="Горячие блюда"></button>
+                            <button class="hero__slider-step" type="button" data-slide="2" aria-label="Сеты для компании"></button>
+                            <button class="hero__slider-step" type="button" data-slide="3" aria-label="Десерты и матча"></button>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+    <script src="assets/js/script.js" defer></script>
+</body>
+</html>
