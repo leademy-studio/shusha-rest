@@ -59,6 +59,7 @@
     position: relative;
     aspect-ratio: 4 / 3;
     overflow: hidden;
+    background: var(--muted);
 }
 
 .popular-card__image {
