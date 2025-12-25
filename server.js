@@ -43,27 +43,21 @@ app.get("/api/catalog", async (_, res) => {
             return res.status(500).json({ error: "No organizations available for the provided API login" });
         }
 
-        const menuMeta = await fetchMenuMeta(token);
-        const externalMenuId = menuMeta.externalMenus?.[0]?.id;
-        const priceCategoryId = menuMeta.priceCategories?.[0]?.id;
+        const terminalGroups = await fetchTerminalGroups(token, [organizationId]);
+        const terminalGroupId =
+            terminalGroups.find((group) => group.isActive)?.id || terminalGroups[0]?.id || null;
 
-        if (!externalMenuId) {
-            return res.status(500).json({ error: "No external menus found for the provided API login" });
+        if (!terminalGroupId) {
+            return res.status(500).json({ error: "No terminal groups available for the organization" });
         }
 
-        const menu = await fetchMenuById(token, {
-            externalMenuId,
-            organizationId,
-            priceCategoryId
-        });
-
-        const items = simplifyMenu(menu, organizationId);
+        const nomenclature = await fetchNomenclature(token, organizationId);
+        const items = simplifyNomenclature(nomenclature, organizationId);
 
         return res.json({
             items,
             organizationId,
-            externalMenuId,
-            priceCategoryId
+            terminalGroupId
         });
     } catch (error) {
         console.error("Catalog fetch failed:", error);
@@ -104,82 +98,91 @@ async function fetchOrganizations(token) {
     return data.organizations || [];
 }
 
-async function fetchMenuMeta(token) {
-    const response = await fetch(`${IIKO_BASE_URL}/api/2/menu`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({})
-    });
-
-    if (!response.ok) {
-        throw new Error(`Menu meta request failed with status ${response.status}`);
-    }
-
-    return response.json();
-}
-
-async function fetchMenuById(token, { externalMenuId, organizationId, priceCategoryId }) {
-    const response = await fetch(`${IIKO_BASE_URL}/api/2/menu/by_id`, {
+async function fetchTerminalGroups(token, organizationIds) {
+    const response = await fetch(`${IIKO_BASE_URL}/api/1/terminal_groups`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
-            externalMenuId,
-            organizationIds: [organizationId],
-            priceCategoryId,
-            version: 4
+            organizationIds,
+            returnAdditionalInfo: false,
+            includeExternalDeleted: false
         })
     });
 
     if (!response.ok) {
-        throw new Error(`Menu request failed with status ${response.status}`);
+        throw new Error(`Terminal groups request failed with status ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.terminalGroups || [];
+}
+
+async function fetchNomenclature(token, organizationId) {
+    const response = await fetch(`${IIKO_BASE_URL}/api/1/nomenclature`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+            organizationId
+        })
+    });
+
+    if (!response.ok) {
+        throw new Error(`Nomenclature request failed with status ${response.status}`);
     }
 
     return response.json();
 }
 
-function simplifyMenu(menu, organizationId) {
-    const categories = menu.itemGroups || menu.productCategories || [];
-    const items = [];
-
-    categories.forEach((category) => {
-        if (!category?.items?.length) {
-            return;
+function simplifyNomenclature(nomenclature, organizationId) {
+    const groupsIndex = new Map();
+    (nomenclature.groups || []).forEach((group) => {
+        if (group?.id) {
+            groupsIndex.set(group.id, group.name || "Меню");
         }
-
-        category.items.forEach((item) => {
-            const size = (item.itemSizes && item.itemSizes[0]) || (item.sizes && item.sizes[0]);
-            if (!size) {
-                return;
-            }
-
-            const priceEntry =
-                (size.prices || []).find((p) => {
-                    if (!p.organizations || !Array.isArray(p.organizations)) {
-                        return true;
-                    }
-                    return p.organizations.includes(organizationId);
-                }) || (size.prices || [])[0];
-
-            const price = priceEntry?.price ?? null;
-            const imageUrl = size.buttonImageUrl || category.buttonImageUrl || menu.buttonImageUrl || null;
-
-            items.push({
-                id: `${item.id}:${size.id ?? ""}`,
-                name: item.name || "Блюдо",
-                price: typeof price === "number" ? price : price ? Number(price) : null,
-                imageUrl,
-                category: category.name || null
-            });
-        });
     });
 
-    return items;
+    const products = nomenclature.products || [];
+    return products.reduce((acc, product) => {
+        if (!product || product.isDeleted) {
+            return acc;
+        }
+
+        const sizePrice =
+            (product.sizePrices || []).find((p) => {
+                if (p.organizationId) {
+                    return p.organizationId === organizationId;
+                }
+                if (p.organizations && Array.isArray(p.organizations)) {
+                    return p.organizations.includes(organizationId);
+                }
+                return true;
+            }) || (product.sizePrices || [])[0];
+
+        if (!sizePrice) {
+            return acc;
+        }
+
+        const priceRaw = sizePrice.price ?? null;
+        const price = typeof priceRaw === "number" ? priceRaw : priceRaw ? Number(priceRaw) : null;
+        const imageUrl = (product.imageLinks && product.imageLinks[0]) || null;
+        const category = groupsIndex.get(product.parentGroup) || "Меню";
+
+        acc.push({
+            id: sizePrice.sizeId ? `${product.id}:${sizePrice.sizeId}` : product.id,
+            name: product.name || "Блюдо",
+            price,
+            imageUrl,
+            category
+        });
+
+        return acc;
+    }, []);
 }
 
 app.listen(PORT, () => {
