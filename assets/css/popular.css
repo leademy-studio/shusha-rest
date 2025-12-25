@@ -1,0 +1,160 @@
+.popular {
+    padding: 84px 16px 96px;
+}
+
+.popular__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.popular__title {
+    margin: 0;
+    font-size: clamp(1.8rem, 2.3vw, 2.2rem);
+    line-height: 1.2;
+    color: var(--text-primary);
+}
+
+.popular__all {
+    padding: 12px 18px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--muted-strong);
+    background: transparent;
+    color: var(--text-primary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color var(--transition), color var(--transition), border-color var(--transition), transform var(--transition);
+}
+
+.popular__all:hover {
+    background: var(--muted);
+    border-color: var(--text-secondary);
+}
+
+.popular__all:focus-visible {
+    outline: 2px solid rgba(126, 174, 255, 0.8);
+    outline-offset: 2px;
+}
+
+.popular__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 18px;
+}
+
+.popular-card {
+    display: grid;
+    gap: 12px;
+    background: #ffffff;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--panel-border);
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(12, 22, 44, 0.08);
+}
+
+.popular-card__media {
+    margin: 0;
+    position: relative;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+}
+
+.popular-card__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.popular-card__body {
+    padding: 0 16px 16px;
+    display: grid;
+    gap: 12px;
+}
+
+.popular-card__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.popular-card__title {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.4;
+    color: var(--text-primary);
+}
+
+.popular-card__price {
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.popular-card__actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.popular-card__button {
+    height: 44px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--muted-strong);
+    background: transparent;
+    color: var(--text-primary);
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: background-color var(--transition), color var(--transition), border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+}
+
+.popular-card__button--primary {
+    background: var(--accent);
+    color: #0f1620;
+    border-color: transparent;
+    box-shadow: 0 12px 32px rgba(240, 195, 106, 0.25);
+}
+
+.popular-card__button--primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 40px rgba(240, 195, 106, 0.3);
+}
+
+.popular-card__button--ghost:hover {
+    background: var(--muted);
+    border-color: var(--text-secondary);
+}
+
+.popular-card__button:focus-visible {
+    outline: 2px solid rgba(126, 174, 255, 0.8);
+    outline-offset: 2px;
+}
+
+.popular-card__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 768px) {
+    .popular__header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .popular__all {
+        width: 100%;
+        text-align: center;
+    }
+
+    .popular-card__actions {
+        grid-template-columns: 1fr;
+    }
+}
