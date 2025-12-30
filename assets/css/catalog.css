@@ -197,10 +197,30 @@
 }
 
 .catalog-hero__filters {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        position: sticky;
+        top: 84px; /* высота header + небольшой отступ */
+        z-index: 10;
+        background: #fff;
+        padding: 8px 0 8px 0;
+        margin-bottom: 8px;
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(12,22,44,0.04);
+        transition: top 0.2s;
+}
+
+@media (max-width: 900px) {
+    .catalog-hero__filters {
+        top: 64px;
+    }
+}
+@media (max-width: 600px) {
+    .catalog-hero__filters {
+        top: 56px;
+    }
 }
 
 .catalog-chip {
@@ -229,8 +249,29 @@
 }
 
 .catalog-grid {
-    position: relative;
-    z-index: 1;
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(280px, 1fr));
+        gap: 18px;
+        align-items: start;
+        justify-content: start;
+}
+
+@media (max-width: 1200px) {
+    .catalog-grid {
+        grid-template-columns: repeat(3, minmax(240px, 1fr));
+    }
+}
+@media (max-width: 900px) {
+    .catalog-grid {
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
+    }
+}
+@media (max-width: 600px) {
+    .catalog-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .catalog-empty {

@@ -1,6 +1,6 @@
-const catalogGrid = document.getElementById("catalog-grid");
-const statusLabel = document.getElementById("catalog-status");
-const filtersContainer = document.getElementById("catalog-filters");
+let catalogGrid;
+let statusLabel;
+let filtersContainer;
 
 let catalogItems = [];
 let activeFilter = "all";
@@ -333,7 +333,13 @@ function renderFilters(categories) {
 }
 
 async function loadCatalog() {
+    // Инициализируем элементы DOM
+    catalogGrid = document.getElementById("catalog-grid");
+    statusLabel = document.getElementById("catalog-status");
+    filtersContainer = document.getElementById("catalog-filters");
+    
     if (!catalogGrid) {
+        console.error("catalog-grid не найден!");
         return;
     }
 
@@ -348,15 +354,15 @@ async function loadCatalog() {
 
     let incoming = [];
     try {
-        if (typeof fetchCatalog === "function") {
-            console.log("Загружаем каталог из API...");
-            const response = await fetchCatalog();
-            console.log("API ответ:", response);
-            incoming = Array.isArray(response?.items) ? response.items : [];
-            console.log(`Получено товаров: ${incoming.length}`);
-        } else {
-            console.warn("fetchCatalog не определена, используем fallback");
+        console.log("Загружаем каталог из API...");
+        const response = await fetch("/api/catalog");
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+        const data = await response.json();
+        console.log("API ответ:", data);
+        incoming = Array.isArray(data?.items) ? data.items : [];
+        console.log(`Получено товаров: ${incoming.length}`);
     } catch (error) {
         console.error("Catalog: не удалось получить меню", error);
     }
@@ -377,10 +383,5 @@ async function loadCatalog() {
     setActiveFilter("all");
 }
 
-// Запускаем загрузку каталога
-if (document.readyState === 'loading') {
-    document.addEventListener("DOMContentLoaded", loadCatalog);
-} else {
-    // DOM уже загружен (скрипт с defer)
-    loadCatalog();
-}
+// Запускаем загрузку каталога после полной загрузки DOM
+document.addEventListener("DOMContentLoaded", loadCatalog);

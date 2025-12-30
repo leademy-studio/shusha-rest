@@ -38,10 +38,30 @@
     outline-offset: 2px;
 }
 
+
 .popular__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 18px;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(280px, 1fr));
+        gap: 18px;
+        align-items: start;
+        justify-content: start;
+        /* min-height не нужен, чтобы не растягивать карточки */
+}
+
+@media (max-width: 1200px) {
+    .popular__grid {
+        grid-template-columns: repeat(3, minmax(240px, 1fr));
+    }
+}
+@media (max-width: 900px) {
+    .popular__grid {
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
+    }
+}
+@media (max-width: 600px) {
+    .popular__grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .popular-card {
@@ -52,6 +72,12 @@
     border: 1px solid var(--panel-border);
     overflow: hidden;
     box-shadow: 0 12px 40px rgba(12, 22, 44, 0.08);
+    width: 100%;
+    max-width: 340px;
+    min-width: 280px;
+    min-height: 420px;
+    max-height: 480px;
+    justify-self: center;
 }
 
 .popular-card__media {
@@ -210,5 +236,20 @@
 
     .popular-card__actions {
         grid-template-columns: 1fr;
+    }
+    
+    .popular-card {
+        min-height: 440px;
+        max-height: none;
+        min-width: 240px;
+        max-width: 100%;
+    }
+    
+    .popular-card__media {
+        aspect-ratio: 16 / 10;
+    }
+    
+    .popular-card__body {
+        padding: 0 14px 14px;
     }
 }

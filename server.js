@@ -10,6 +10,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+
+// Раздача всех статических файлов из корня проекта (включая catalog.html)
+app.use(express.static(__dirname));
 const PORT = process.env.PORT || 3000;
 const IIKO_BASE_URL = process.env.IIKO_BASE_URL || "https://api-ru.iiko.services";
 const IIKO_API_LOGIN = process.env.IIKO_API_LOGIN;
