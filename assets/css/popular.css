@@ -88,6 +88,44 @@
     background: var(--muted);
 }
 
+.popular-card__overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(15, 22, 32, 0.92);
+    backdrop-filter: blur(8px);
+    color: #ffffff;
+    padding: 20px;
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 100%;
+    overflow-y: auto;
+}
+
+.popular-card__overlay.active {
+    transform: translateY(0);
+}
+
+.popular-card__overlay-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+}
+
+.popular-card__overlay-text {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.9);
+}
+
 .popular-card__image {
     width: 100%;
     height: 100%;

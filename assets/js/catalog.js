@@ -125,7 +125,23 @@ function createCard({ id, name, price, imageUrl, category, description, weight }
     categoryBadge.className = "popular-card__category-badge";
     categoryBadge.textContent = category;
 
-    figure.append(img, categoryBadge);
+    // Добавляем оверлей для описания
+    const overlay = document.createElement("div");
+    overlay.className = "popular-card__overlay";
+    
+    const overlayTitle = document.createElement("h4");
+    overlayTitle.className = "popular-card__overlay-title";
+    overlayTitle.textContent = "Описание";
+    
+    const overlayText = document.createElement("p");
+    overlayText.className = "popular-card__overlay-text";
+    overlayText.textContent = description && description.trim() 
+        ? description.trim() 
+        : "Подробное описание блюда отсутствует.";
+    
+    overlay.append(overlayTitle, overlayText);
+
+    figure.append(img, categoryBadge, overlay);
 
     const body = document.createElement("div");
     body.className = "popular-card__body";
@@ -233,6 +249,19 @@ function createCard({ id, name, price, imageUrl, category, description, weight }
     detailsButton.className = "popular-card__button popular-card__button--ghost";
     detailsButton.type = "button";
     detailsButton.textContent = "Подробнее";
+    
+    // Обработчик для кнопки "Подробнее"
+    detailsButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        
+        // Показываем оверлей
+        overlay.classList.add('active');
+        
+        // Скрываем через 5 секунд
+        setTimeout(() => {
+            overlay.classList.remove('active');
+        }, 5000);
+    });
 
     actions.append(addButton, detailsButton);
     body.append(top, actions);
