@@ -84,7 +84,34 @@ function formatPrice(price) {
     return new Intl.NumberFormat("ru-RU").format(price) + " ₽";
 }
 
-function createPopularCard({ name, price, imageUrl }) {
+function extractWeight(name) {
+    const patterns = [
+        /\((\d+\s*(?:гр|г|мл|л|кг|шт))\)/i,
+        /(\d+\s*(?:гр|г|мл|л|кг|шт))\*/i,
+        /(\d+\s*(?:гр|г|мл|л|кг|шт))$/i
+    ];
+    
+    for (const pattern of patterns) {
+        const match = name.match(pattern);
+        if (match) {
+            return match[1].trim();
+        }
+    }
+    return null;
+}
+
+function cleanProductName(name) {
+    let cleaned = name
+        .replace(/\(\d+\s*(?:гр|г|мл|л|кг|шт)\)/gi, '')
+        .replace(/\d+\s*(?:гр|г|мл|л|кг|шт)\*/gi, '')
+        .replace(/\s+\d+\s*(?:гр|г|мл|л|кг|шт)$/gi, '')
+        .replace(/\*+$/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    return cleaned;
+}
+
+function createPopularCard({ id, name, price, imageUrl, category, description, weight }) {
     const article = document.createElement("article");
     article.className = "popular-card";
 
@@ -95,27 +122,59 @@ function createPopularCard({ name, price, imageUrl }) {
     img.className = "popular-card__image";
     img.alt = name;
     img.loading = "lazy";
-    img.src =
-        imageUrl ||
-        "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=800&q=80";
+    img.src = imageUrl || "assets/images/default.jpg";
+    
+    // Обработка ошибок загрузки
+    img.onerror = function() {
+        this.src = "assets/images/default.jpg";
+    };
+    
+    // Бейдж категории
+    if (category) {
+        const categoryBadge = document.createElement("span");
+        categoryBadge.className = "popular-card__category-badge";
+        categoryBadge.textContent = category;
+        figure.appendChild(categoryBadge);
+    }
 
-    figure.appendChild(img);
+    figure.insertBefore(img, figure.firstChild);
 
     const body = document.createElement("div");
     body.className = "popular-card__body";
 
     const top = document.createElement("div");
     top.className = "popular-card__top";
+    
+    const titleWrapper = document.createElement("div");
+    titleWrapper.className = "popular-card__title-wrapper";
 
     const title = document.createElement("h3");
     title.className = "popular-card__title";
     title.textContent = name;
+    
+    titleWrapper.appendChild(title);
+    
+    // Добавляем вес, если есть
+    if (weight) {
+        const weightBadge = document.createElement("span");
+        weightBadge.className = "popular-card__weight";
+        weightBadge.textContent = weight;
+        titleWrapper.appendChild(weightBadge);
+    }
 
     const priceEl = document.createElement("span");
     priceEl.className = "popular-card__price";
     priceEl.textContent = formatPrice(price) || "—";
 
-    top.append(title, priceEl);
+    top.append(titleWrapper, priceEl);
+    
+    // Добавляем описание, если есть
+    if (description && description.trim()) {
+        const descEl = document.createElement("p");
+        descEl.className = "popular-card__description";
+        descEl.textContent = description.trim();
+        body.appendChild(descEl);
+    }
 
     const actions = document.createElement("div");
     actions.className = "popular-card__actions";
@@ -123,6 +182,7 @@ function createPopularCard({ name, price, imageUrl }) {
     const addButton = document.createElement("button");
     addButton.className = "popular-card__button popular-card__button--primary";
     addButton.type = "button";
+    addButton.dataset.productId = id;
     addButton.innerHTML = `
         <span class="popular-card__icon" aria-hidden="true">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -133,6 +193,36 @@ function createPopularCard({ name, price, imageUrl }) {
         </span>
         В корзину
     `;
+    
+    // Добавляем функционал корзины
+    addButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (typeof cart !== 'undefined') {
+            const product = { id, name, price, imageUrl, category, weight };
+            cart.addItem(product);
+            
+            // Визуальная обратная связь
+            addButton.classList.add('popular-card__button--added');
+            addButton.innerHTML = `
+                <span class="popular-card__icon" aria-hidden="true">✓</span>
+                Добавлено
+            `;
+            
+            setTimeout(() => {
+                addButton.classList.remove('popular-card__button--added');
+                addButton.innerHTML = `
+                    <span class="popular-card__icon" aria-hidden="true">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M6 6h15l-1.5 8.5H7.5L6 6zm0 0L4 3H1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="9" cy="19" r="1" fill="currentColor"/>
+                            <circle cx="17" cy="19" r="1" fill="currentColor"/>
+                        </svg>
+                    </span>
+                    В корзину
+                `;
+            }, 1500);
+        }
+    });
 
     const detailsButton = document.createElement("button");
     detailsButton.className = "popular-card__button popular-card__button--ghost";
@@ -157,15 +247,70 @@ async function populatePopular() {
             return;
         }
 
-        const topItems = items.slice(0, 3);
+        // Фильтруем: исключаем напитки, выбираем только с изображениями
+        const filteredItems = items.filter(item => {
+            const isDrink = item.category === "Прохладительные напитки";
+            const hasImage = item.imageUrl && item.imageUrl !== null;
+            return !isDrink && hasImage;
+        });
+        
+        // Берем первые 3 товара с изображениями (не напитки)
+        const topItems = filteredItems.slice(0, 3);
+        
+        if (topItems.length === 0) {
+            // Если нет подходящих товаров, очищаем секцию
+            popularGrid.innerHTML = '<p style="text-align: center; color: #666;">Товары загружаются...</p>';
+            return;
+        }
+        
+        // Очищаем секцию и добавляем реальные товары
         popularGrid.innerHTML = "";
         topItems.forEach((item) => {
-            popularGrid.appendChild(createPopularCard(item));
+            // Нормализуем данные товара
+            const normalizedItem = {
+                id: item.id,
+                name: cleanProductName(item.name),
+                price: item.price,
+                imageUrl: item.imageUrl,
+                category: item.category,
+                description: item.description || '',
+                weight: extractWeight(item.name)
+            };
+            popularGrid.appendChild(createPopularCard(normalizedItem));
         });
     } catch (error) {
-        // Keep static fallback cards if request fails
+        // При ошибке очищаем секцию
         console.warn("Failed to load catalog:", error);
+        popularGrid.innerHTML = '<p style="text-align: center; color: #666;">Не удалось загрузить товары</p>';
     }
+}
+
+// Функции для работы с весом и названиями
+function extractWeight(name) {
+    const patterns = [
+        /\((\d+\s*(?:гр|г|мл|л|кг|шт))\)/i,
+        /(\d+\s*(?:гр|г|мл|л|кг|шт))\*/i,
+        /(\d+\s*(?:гр|г|мл|л|кг|шт))$/i
+    ];
+    
+    for (const pattern of patterns) {
+        const match = name.match(pattern);
+        if (match) {
+            return match[1].trim();
+        }
+    }
+    return null;
+}
+
+function cleanProductName(name) {
+    let cleaned = name
+        .replace(/\(\d+\s*(?:гр|г|мл|л|кг|шт)\)/gi, '')
+        .replace(/\d+\s*(?:гр|г|мл|л|кг|шт)\*/gi, '')
+        .replace(/\s+\d+\s*(?:гр|г|мл|л|кг|шт)$/gi, '')
+        .replace(/\*+$/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    return cleaned;
 }
 
 populatePopular();

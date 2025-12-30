@@ -377,4 +377,10 @@ async function loadCatalog() {
     setActiveFilter("all");
 }
 
-document.addEventListener("DOMContentLoaded", loadCatalog);
+// Запускаем загрузку каталога
+if (document.readyState === 'loading') {
+    document.addEventListener("DOMContentLoaded", loadCatalog);
+} else {
+    // DOM уже загружен (скрипт с defer)
+    loadCatalog();
+}
