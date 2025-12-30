@@ -98,7 +98,7 @@ function normalizeItems(items) {
     });
 }
 
-function createCard({ name, price, imageUrl, category, description, weight }) {
+function createCard({ id, name, price, imageUrl, category, description, weight }) {
     const article = document.createElement("article");
     article.className = "popular-card catalog-card";
     article.setAttribute("role", "listitem");
