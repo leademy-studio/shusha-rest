@@ -187,6 +187,7 @@ function createCard({ name, price, imageUrl, category, description, weight }) {
     const addButton = document.createElement("button");
     addButton.className = "popular-card__button popular-card__button--primary";
     addButton.type = "button";
+    addButton.dataset.productId = id;
     addButton.innerHTML = `
         <span class="popular-card__icon" aria-hidden="true">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -197,6 +198,36 @@ function createCard({ name, price, imageUrl, category, description, weight }) {
         </span>
         В корзину
     `;
+    
+    // Добавляем функционал корзины
+    addButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (typeof cart !== 'undefined') {
+            const product = { id, name, price, imageUrl, category, weight };
+            cart.addItem(product);
+            
+            // Визуальная обратная связь
+            addButton.classList.add('popular-card__button--added');
+            addButton.innerHTML = `
+                <span class="popular-card__icon" aria-hidden="true">✓</span>
+                Добавлено
+            `;
+            
+            setTimeout(() => {
+                addButton.classList.remove('popular-card__button--added');
+                addButton.innerHTML = `
+                    <span class="popular-card__icon" aria-hidden="true">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M6 6h15l-1.5 8.5H7.5L6 6zm0 0L4 3H1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="9" cy="19" r="1" fill="currentColor"/>
+                            <circle cx="17" cy="19" r="1" fill="currentColor"/>
+                        </svg>
+                    </span>
+                    В корзину
+                `;
+            }, 1500);
+        }
+    });
 
     const detailsButton = document.createElement("button");
     detailsButton.className = "popular-card__button popular-card__button--ghost";
