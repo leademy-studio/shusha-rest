@@ -2,73 +2,6 @@ const catalogGrid = document.getElementById("catalog-grid");
 const statusLabel = document.getElementById("catalog-status");
 const filtersContainer = document.getElementById("catalog-filters");
 
-const fallbackItems = [
-    {
-        id: "set-classic",
-        name: "Сет «Восточная классика»",
-        price: 1290,
-        category: "Роллы",
-        imageUrl:
-            "https://images.unsplash.com/photo-1604908177138-0681c9f9f1ae?auto=format&fit=crop&w=900&q=80"
-    },
-    {
-        id: "kebab-lamb",
-        name: "Шашлык из баранины на углях",
-        price: 980,
-        category: "Мангал",
-        imageUrl:
-            "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=80"
-    },
-    {
-        id: "poke-salmon",
-        name: "Поке с лососем и киноа",
-        price: 720,
-        category: "Боулы",
-        imageUrl:
-            "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=900&q=80"
-    },
-    {
-        id: "khachapuri",
-        name: "Хачапури по-аджарски",
-        price: 540,
-        category: "Выпечка",
-        imageUrl:
-            "https://images.unsplash.com/photo-1548943487-a2e4e43b4853?auto=format&fit=crop&w=900&q=80"
-    },
-    {
-        id: "soup-tom",
-        name: "Том ям с креветкой",
-        price: 690,
-        category: "Супы",
-        imageUrl:
-            "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=900&q=80"
-    },
-    {
-        id: "dessert-mango",
-        name: "Чизкейк манго-маракуйя",
-        price: 390,
-        category: "Десерты",
-        imageUrl:
-            "https://images.unsplash.com/photo-1464305795204-6f5bbfc7fb81?auto=format&fit=crop&w=900&q=80"
-    },
-    {
-        id: "drink-matcha",
-        name: "Матча латте на кокосовом молоке",
-        price: 310,
-        category: "Напитки",
-        imageUrl:
-            "https://images.unsplash.com/photo-1481390322020-00505612b252?auto=format&fit=crop&w=900&q=80"
-    },
-    {
-        id: "veggie-roll",
-        name: "Веган ролл с авокадо",
-        price: 460,
-        category: "Роллы",
-        imageUrl:
-            "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=900&q=80"
-    }
-];
-
 let catalogItems = [];
 let activeFilter = "all";
 let statusNote = "";
@@ -83,6 +16,35 @@ const moneyFormatter =
               return new Intl.NumberFormat("ru-RU").format(price) + " ₽";
           };
 
+function extractWeight(name) {
+    // Извлекаем вес из названия: (300гр), 500 мл, (200гр)*, 150гр и т.д.
+    const patterns = [
+        /\((\d+\s*(?:гр|г|мл|л|кг|шт))\)/i,  // (300гр), (500 мл)
+        /(\d+\s*(?:гр|г|мл|л|кг|шт))\*/i,     // 300гр*, 500 мл*
+        /(\d+\s*(?:гр|г|мл|л|кг|шт))$/i       // 300гр, 500 мл в конце
+    ];
+    
+    for (const pattern of patterns) {
+        const match = name.match(pattern);
+        if (match) {
+            return match[1].trim();
+        }
+    }
+    return null;
+}
+
+function cleanProductName(name) {
+    // Убираем вес из названия и лишние символы
+    let cleaned = name
+        .replace(/\(\d+\s*(?:гр|г|мл|л|кг|шт)\)/gi, '')  // убираем (300гр)
+        .replace(/\d+\s*(?:гр|г|мл|л|кг|шт)\*/gi, '')    // убираем 300гр*
+        .replace(/\s+\d+\s*(?:гр|г|мл|л|кг|шт)$/gi, '')  // убираем 300гр в конце
+        .replace(/\*+$/g, '')                             // убираем оставшиеся *
+        .replace(/\s+/g, ' ')                             // нормализуем пробелы
+        .trim();
+    return cleaned;
+}
+
 function setStatus(text) {
     if (statusLabel) {
         statusLabel.textContent = text;
@@ -91,10 +53,10 @@ function setStatus(text) {
 
 function normalizeItems(items) {
     if (!Array.isArray(items) || !items.length) {
-        return fallbackItems;
+        return [];
     }
 
-    return items.map((item, index) => {
+    const normalized = items.map((item, index) => {
         const parsedPrice = typeof item.price === "number" ? item.price : Number(item.price);
         const categoryName =
             typeof item.category === "string"
@@ -102,19 +64,41 @@ function normalizeItems(items) {
                 : item.category
                   ? String(item.category)
                   : "Меню";
+        
+        // Определяем изображение: реальное из API или дефолтное
+        let imageUrl = item.imageUrl;
+        if (!imageUrl) {
+            imageUrl = "assets/images/default.jpg";
+        }
+        
+        const originalName = item.name || "Блюдо";
+        const weight = extractWeight(originalName);
+        const cleanedName = cleanProductName(originalName);
+        
         return {
             id: item.id || `catalog-item-${index}`,
-            name: item.name || "Блюдо",
+            name: cleanedName,
+            originalName: originalName,
+            weight: weight,
+            description: item.description || "",
             price: Number.isFinite(parsedPrice) ? parsedPrice : null,
             category: categoryName,
-            imageUrl:
-                item.imageUrl ||
-                "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format&fit=crop&w=900&q=80"
+            imageUrl
         };
+    });
+
+    // Сортируем: напитки в конец списка
+    return normalized.sort((a, b) => {
+        const isDrinkA = a.category === "Прохладительные напитки";
+        const isDrinkB = b.category === "Прохладительные напитки";
+        
+        if (isDrinkA && !isDrinkB) return 1;  // a после b
+        if (!isDrinkA && isDrinkB) return -1; // a перед b
+        return 0; // сохраняем исходный порядок
     });
 }
 
-function createCard({ name, price, imageUrl, category }) {
+function createCard({ name, price, imageUrl, category, description, weight }) {
     const article = document.createElement("article");
     article.className = "popular-card catalog-card";
     article.setAttribute("role", "listitem");
@@ -130,8 +114,18 @@ function createCard({ name, price, imageUrl, category }) {
     img.alt = name;
     img.loading = "lazy";
     img.setAttribute("itemprop", "image");
+    
+    // Добавляем обработку ошибок загрузки изображений
+    img.onerror = function() {
+        this.src = "assets/images/default.jpg";
+    };
 
-    figure.append(img);
+    // Добавляем бейдж категории
+    const categoryBadge = document.createElement("span");
+    categoryBadge.className = "popular-card__category-badge";
+    categoryBadge.textContent = category;
+
+    figure.append(img, categoryBadge);
 
     const body = document.createElement("div");
     body.className = "popular-card__body";
@@ -139,10 +133,23 @@ function createCard({ name, price, imageUrl, category }) {
     const top = document.createElement("div");
     top.className = "popular-card__top";
 
+    const titleWrapper = document.createElement("div");
+    titleWrapper.className = "popular-card__title-wrapper";
+    
     const title = document.createElement("h3");
     title.className = "popular-card__title";
     title.textContent = name;
     title.setAttribute("itemprop", "name");
+    
+    titleWrapper.appendChild(title);
+    
+    // Добавляем вес, если он есть
+    if (weight) {
+        const weightBadge = document.createElement("span");
+        weightBadge.className = "popular-card__weight";
+        weightBadge.textContent = weight;
+        titleWrapper.appendChild(weightBadge);
+    }
 
     const priceEl = document.createElement("span");
     priceEl.className = "popular-card__price";
@@ -163,7 +170,16 @@ function createCard({ name, price, imageUrl, category }) {
         priceEl.appendChild(priceNumber);
     }
 
-    top.append(title, priceEl);
+    top.append(titleWrapper, priceEl);
+
+    // Добавляем описание, если оно есть
+    if (description && description.trim()) {
+        const descEl = document.createElement("p");
+        descEl.className = "popular-card__description";
+        descEl.textContent = description.trim();
+        descEl.setAttribute("itemprop", "description");
+        body.appendChild(descEl);
+    }
 
     const actions = document.createElement("div");
     actions.className = "popular-card__actions";
@@ -200,6 +216,7 @@ function renderCatalog(list) {
         return;
     }
 
+    console.log(`renderCatalog вызвана с ${list.length} товарами`);
     catalogGrid.innerHTML = "";
 
     if (!list.length) {
@@ -212,9 +229,14 @@ function renderCatalog(list) {
 
     const fragment = document.createDocumentFragment();
     list.forEach((item) => {
-        fragment.appendChild(createCard(item));
+        try {
+            fragment.appendChild(createCard(item));
+        } catch (e) {
+            console.error("Ошибка создания карточки:", e, item);
+        }
     });
     catalogGrid.appendChild(fragment);
+    console.log(`Отрисовано ${list.length} карточек`);
 }
 
 function collectCategories(items) {
@@ -285,24 +307,41 @@ async function loadCatalog() {
     }
 
     setStatus("Загружаем меню...");
+    
+    // Показываем скелетоны во время загрузки
+    catalogGrid.innerHTML = `
+        <div class="catalog-skeleton">
+            ${Array(6).fill('<div class="catalog-skeleton__item"></div>').join('')}
+        </div>
+    `;
 
     let incoming = [];
     try {
         if (typeof fetchCatalog === "function") {
+            console.log("Загружаем каталог из API...");
             const response = await fetchCatalog();
+            console.log("API ответ:", response);
             incoming = Array.isArray(response?.items) ? response.items : [];
+            console.log(`Получено товаров: ${incoming.length}`);
+        } else {
+            console.warn("fetchCatalog не определена, используем fallback");
         }
     } catch (error) {
-        console.warn("Catalog: не удалось получить меню", error);
+        console.error("Catalog: не удалось получить меню", error);
     }
 
-    const normalizedItems = normalizeItems(incoming.length ? incoming : fallbackItems);
+    const normalizedItems = normalizeItems(incoming);
+    console.log(`Нормализовано товаров: ${normalizedItems.length}`);
     catalogItems = normalizedItems;
-    statusNote = incoming.length
-        ? "данные из меню IIKO"
-        : "показываем подборку, сервис меню недоступен";
+    
+    if (incoming.length) {
+        statusNote = "данные из меню IIKO";
+    } else {
+        statusNote = "меню недоступно";
+    }
 
     const categories = collectCategories(normalizedItems);
+    console.log(`Найдено категорий: ${categories.length}`, categories);
     renderFilters(categories);
     setActiveFilter("all");
 }

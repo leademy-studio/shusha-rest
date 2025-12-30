@@ -31,34 +31,44 @@ app.get("/catalog", (_, res) => {
 
 app.get("/api/catalog", async (_, res) => {
     try {
-        if (!IIKO_API_LOGIN) {
-            return res.status(500).json({ error: "IIKO_API_LOGIN env variable is not configured" });
+        // Пробуем загрузить из iiko API
+        if (IIKO_API_LOGIN) {
+            try {
+                const token = await fetchAccessToken();
+                const organizations = await fetchOrganizations(token);
+                const organizationId = organizations[0]?.id;
+
+                if (organizationId) {
+                    const terminalGroups = await fetchTerminalGroups(token, [organizationId]);
+                    const terminalGroupId =
+                        terminalGroups.find((group) => group.isActive)?.id || terminalGroups[0]?.id || null;
+
+                    if (terminalGroupId) {
+                        const nomenclature = await fetchNomenclature(token, organizationId);
+                        const items = simplifyNomenclature(nomenclature, organizationId);
+
+                        return res.json({
+                            items,
+                            organizationId,
+                            terminalGroupId
+                        });
+                    }
+                }
+            } catch (iikoError) {
+                console.warn("iiko API unavailable, falling back to static menu:", iikoError.message);
+            }
         }
 
-        const token = await fetchAccessToken();
-        const organizations = await fetchOrganizations(token);
-        const organizationId = organizations[0]?.id;
-
-        if (!organizationId) {
-            return res.status(500).json({ error: "No organizations available for the provided API login" });
+        // Фоллбэк: загружаем статическое меню
+        const fs = await import("fs");
+        const staticMenuPath = path.join(__dirname, "static-menu.json");
+        
+        if (fs.existsSync(staticMenuPath)) {
+            const staticMenu = JSON.parse(fs.readFileSync(staticMenuPath, "utf-8"));
+            return res.json(staticMenu);
         }
 
-        const terminalGroups = await fetchTerminalGroups(token, [organizationId]);
-        const terminalGroupId =
-            terminalGroups.find((group) => group.isActive)?.id || terminalGroups[0]?.id || null;
-
-        if (!terminalGroupId) {
-            return res.status(500).json({ error: "No terminal groups available for the organization" });
-        }
-
-        const nomenclature = await fetchNomenclature(token, organizationId);
-        const items = simplifyNomenclature(nomenclature, organizationId);
-
-        return res.json({
-            items,
-            organizationId,
-            terminalGroupId
-        });
+        return res.status(500).json({ error: "Menu not available" });
     } catch (error) {
         console.error("Catalog fetch failed:", error);
         res.status(500).json({ error: "Failed to load catalog", details: error.message });
@@ -172,10 +182,12 @@ function simplifyNomenclature(nomenclature, organizationId) {
         const price = typeof priceRaw === "number" ? priceRaw : priceRaw ? Number(priceRaw) : null;
         const imageUrl = (product.imageLinks && product.imageLinks[0]) || null;
         const category = groupsIndex.get(product.parentGroup) || "Меню";
+        const description = product.description || "";
 
         acc.push({
             id: sizePrice.sizeId ? `${product.id}:${sizePrice.sizeId}` : product.id,
             name: product.name || "Блюдо",
+            description: description.trim(),
             price,
             imageUrl,
             category
