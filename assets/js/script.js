@@ -185,14 +185,6 @@ function createPopularCard({ id, name, price, imageUrl, category, description, w
 
     top.append(titleWrapper, priceEl);
     
-    // Добавляем описание, если есть
-    if (description && description.trim()) {
-        const descEl = document.createElement("p");
-        descEl.className = "popular-card__description";
-        descEl.textContent = description.trim();
-        body.appendChild(descEl);
-    }
-
     const actions = document.createElement("div");
     actions.className = "popular-card__actions";
 
