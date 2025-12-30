@@ -246,17 +246,33 @@ function createPopularCard({ id, name, price, imageUrl, category, description, w
     detailsButton.type = "button";
     detailsButton.textContent = "Подробнее";
     
+    // Переменная для хранения таймера
+    let overlayTimer = null;
+    
     // Обработчик для кнопки "Подробнее"
     detailsButton.addEventListener('click', (e) => {
         e.preventDefault();
         
-        // Показываем оверлей
-        overlay.classList.add('active');
+        // Toggle оверлея
+        const isActive = overlay.classList.contains('active');
         
-        // Скрываем через 5 секунд
-        setTimeout(() => {
+        if (isActive) {
+            // Если оверлей активен - скрываем и отменяем таймер
             overlay.classList.remove('active');
-        }, 5000);
+            if (overlayTimer) {
+                clearTimeout(overlayTimer);
+                overlayTimer = null;
+            }
+        } else {
+            // Если оверлей неактивен - показываем
+            overlay.classList.add('active');
+            
+            // Скрываем через 5 секунд
+            overlayTimer = setTimeout(() => {
+                overlay.classList.remove('active');
+                overlayTimer = null;
+            }, 5000);
+        }
     });
 
     actions.append(addButton, detailsButton);
