@@ -237,6 +237,7 @@
     }
     .legacy__item {
         flex: 0 0 75vw;
+        box-sizing: border-box;
         scroll-snap-align: start;
         padding: 14px;
     }
