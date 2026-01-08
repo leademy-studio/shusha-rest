@@ -1,3 +1,123 @@
+@font-face {
+    font-family: "Archivo";
+    src: url("../fonts/Archivo-ExtraLight.ttf") format("truetype");
+    font-weight: 200;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Archivo";
+    src: url("../fonts/Archivo-Thin.ttf") format("truetype");
+    font-weight: 250;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Archivo";
+    src: url("../fonts/Archivo-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Archivo";
+    src: url("../fonts/Archivo-Medium.ttf") format("truetype");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Archivo";
+    src: url("../fonts/Archivo-Bold.ttf") format("truetype");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "TT Wellingtons";
+    src: url("../fonts/TT-Wellingtons-Thin.otf") format("opentype");
+    font-weight: 200;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "TT Wellingtons";
+    src: url("../fonts/TT-Wellingtons-Light.otf") format("opentype");
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "TT Wellingtons";
+    src: url("../fonts/TT-Wellingtons-Regular.otf") format("opentype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "TT Wellingtons";
+    src: url("../fonts/TT-Wellingtons-Medium.otf") format("opentype"), url("../fonts/TTWellingtons-Medium.ttf") format("truetype");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "TT Wellingtons";
+    src: url("../fonts/TT-Wellingtons-DemiBold.otf") format("opentype");
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "TT Wellingtons";
+    src: url("../fonts/TT-Wellingtons-Bold.otf") format("opentype"), url("../fonts/TT-Wellingtons-Bold.ttf") format("truetype");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "TT Wellingtons";
+    src: url("../fonts/TT-Wellingtons-ExtraBold.otf") format("opentype");
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "TT Wellingtons";
+    src: url("../fonts/TT-Wellingtons-Black.otf") format("opentype");
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "TT Wellingtons";
+    src: url("../fonts/TT-Wellingtons-Italic.otf") format("opentype");
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "TT Wellingtons";
+    src: url("../fonts/TT-Wellingtons-Bold-Italic.otf") format("opentype"), url("../fonts/TT-Wellingtons-Bold-Italic.ttf") format("truetype");
+    font-weight: 700;
+    font-style: italic;
+    font-display: swap;
+}
+
 :root {
     --page-bg: #f6f8fc;
     --text-primary: #0f1620;
@@ -9,6 +129,8 @@
     --radius-pill: 999px;
     --shadow: 0 24px 70px rgba(12, 22, 44, 0.12);
     --transition: 0.3s ease;
+    --font-sans: "Archivo", "TT Wellingtons", "Helvetica Neue", Arial, sans-serif;
+    --font-display: "TT Wellingtons", "Archivo", "Helvetica Neue", Arial, sans-serif;
 }
 
 *,
@@ -19,7 +141,7 @@
 
 body {
     margin: 0;
-    font-family: "Space Grotesk", "Helvetica Neue", Arial, sans-serif;
+    font-family: var(--font-sans);
     background: radial-gradient(circle at 15% 20%, rgba(240, 195, 106, 0.18), transparent 26%),
         radial-gradient(circle at 80% 10%, rgba(126, 174, 255, 0.16), transparent 28%),
         var(--page-bg);
