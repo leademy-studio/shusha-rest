@@ -214,19 +214,19 @@
         order: 1;
     }
     .legacy__video {
-        order: 2;
+        order: 3;
         width: 100%;
         /* Убираем отступы по умолчанию у тега figure */
         margin: 0;
     }
     .legacy__list {
-        order: 3;
+        order: 2;
         display: flex;
         flex-wrap: nowrap;
         gap: 16px;
         overflow-x: auto;
         /* Добавляем отступы, чтобы первая и последняя карточки не прилипали к краям */
-        padding: 8px 0;
+        padding: 8px 16px;
         margin-top: 24px;
         scroll-snap-type: x mandatory;
         -webkit-overflow-scrolling: touch;
@@ -235,12 +235,5 @@
         flex: 0 0 75vw;
         scroll-snap-align: start;
         padding: 14px;
-    }
-    /* Отступы для первой и последней карточки, чтобы они не прилипали к краю и не было проблем с начальной прокруткой */
-    .legacy__item:first-child {
-        margin-left: 16px;
-    }
-    .legacy__item:last-child {
-        margin-right: 16px;
     }
 }
