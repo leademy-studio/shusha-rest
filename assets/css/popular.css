@@ -19,7 +19,7 @@
 
 .popular__all {
     padding: 12px 18px;
-    border-radius: var(--radius-pill);
+    border-radius: var(--radius-md);
     border: 1px solid var(--muted-strong);
     background: transparent;
     color: var(--text-primary);
@@ -216,7 +216,7 @@
 
 .popular-card__button {
     height: 44px;
-    border-radius: var(--radius-pill);
+    border-radius: var(--radius-md);
     border: 1px solid var(--muted-strong);
     background: transparent;
     color: var(--text-primary);

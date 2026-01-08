@@ -113,7 +113,7 @@
     font-weight: 700;
     padding: 0.65rem 1.35rem;
     border: 1px solid transparent;
-    border-radius: var(--radius-pill);
+    border-radius: var(--radius-md);
     box-shadow: var(--shadow-accent);
     cursor: pointer;
     transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
@@ -143,6 +143,7 @@
     padding: 0;
     gap: 6px;
     overflow: visible;
+    border-radius: var(--radius-md);
 }
 
 .header__menu-toggle-line {
@@ -359,7 +360,7 @@ body {
 .reservation-modal__counter-btn {
     width: 32px;
     height: 32px;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
     border: 1px solid var(--muted-strong, rgba(15, 22, 32, 0.16));
     background: #f6f7fb;
     font-weight: 700;
@@ -426,7 +427,7 @@ body {
     right: 14px;
     width: 36px;
     height: 36px;
-    border-radius: 50%;
+    border-radius: var(--radius-md);
     border: 1px solid var(--panel-border, rgba(15, 22, 32, 0.12));
     background: #fff;
     font-size: 1.2rem;

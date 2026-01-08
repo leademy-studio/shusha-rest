@@ -75,6 +75,7 @@
     place-items: center;
     gap: 10px;
     border: none;
+    border-radius: var(--radius-md);
     background: linear-gradient(180deg, rgba(15, 22, 32, 0.24), rgba(15, 22, 32, 0.18));
     color: var(--text-primary);
     font-weight: 600;

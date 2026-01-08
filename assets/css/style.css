@@ -199,7 +199,7 @@ body {
 
 .corporate__cta {
     padding: 14px 20px;
-    border-radius: var(--radius-pill);
+    border-radius: var(--radius-md);
     border: 1px solid transparent;
     background: var(--accent);
     color: #0f1620;
@@ -216,7 +216,7 @@ body {
 
 .corporate__link {
     padding: 14px 18px;
-    border-radius: var(--radius-pill);
+    border-radius: var(--radius-md);
     border: 1px solid var(--muted-strong);
     background: transparent;
     color: var(--text-primary);
