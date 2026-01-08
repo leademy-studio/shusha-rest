@@ -142,6 +142,7 @@
     cursor: pointer;
     padding: 0;
     gap: 6px;
+    overflow: visible;
 }
 
 .header__menu-toggle-line {
@@ -149,6 +150,7 @@
     height: 2px;
     background: #1a1a1a;
     border-radius: 2px;
+    transform-origin: center;
     transition: all 0.3s ease;
 }
 
@@ -498,10 +500,7 @@ body {
 @media (max-width: 768px) {
     .header__overlay {
         position: fixed;
-        top: 72px;
-        left: 0;
-        right: 0;
-        bottom: 0;
+        inset: 0;
         background: rgba(0, 0, 0, 0.5);
         opacity: 0;
         pointer-events: none;
