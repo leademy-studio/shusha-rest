@@ -258,22 +258,6 @@
         justify-content: start;
 }
 
-@media (max-width: 1200px) {
-    .catalog-grid {
-        grid-template-columns: repeat(3, minmax(240px, 1fr));
-    }
-}
-@media (max-width: 900px) {
-    .catalog-grid {
-        grid-template-columns: repeat(2, minmax(220px, 1fr));
-    }
-}
-@media (max-width: 600px) {
-    .catalog-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
 .catalog-empty {
     margin: 0;
     padding: 22px;
@@ -345,19 +329,102 @@
     text-overflow: ellipsis;
 }
 
-@media (max-width: 900px) {
-    .catalog-hero__panel {
-        padding: 20px;
+@media (max-width: 1920px) and (min-width: 1441px) {
+    .catalog-hero {
+        padding: 80px 16px 100px;
     }
-    
-    .catalog-skeleton {
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+
+    .catalog-hero__panel {
+        padding: 24px;
+    }
+
+    .catalog-grid {
+        grid-template-columns: repeat(4, minmax(260px, 1fr));
     }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 1440px) and (min-width: 1281px) {
     .catalog-hero {
-        padding-top: 64px;
+        padding: 78px 16px 96px;
+    }
+
+    .catalog-hero__title-group {
+        max-width: 680px;
+    }
+
+    .catalog-hero__panel {
+        padding: 22px;
+    }
+
+    .catalog-grid {
+        grid-template-columns: repeat(4, minmax(250px, 1fr));
+        gap: 16px;
+    }
+
+    .catalog-skeleton {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+}
+
+@media (max-width: 1280px) and (min-width: 901px) {
+    .catalog-hero {
+        padding: 72px 16px 92px;
+    }
+
+    .catalog-hero__heading {
+        gap: 20px;
+    }
+
+    .catalog-hero__panel {
+        padding: 22px;
+        border-radius: 22px;
+    }
+
+    .catalog-grid {
+        grid-template-columns: repeat(3, minmax(240px, 1fr));
+        gap: 16px;
+    }
+
+    .catalog-skeleton {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+
+    .catalog-hero__filters {
+        top: 78px;
+    }
+}
+
+@media (max-width: 900px) and (min-width: 769px) {
+    .catalog-hero {
+        padding: 68px 16px 88px;
+    }
+
+    .catalog-hero__heading {
+        gap: 18px;
+    }
+
+    .catalog-hero__panel {
+        padding: 20px;
+        border-radius: 20px;
+    }
+
+    .catalog-grid {
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
+        gap: 16px;
+    }
+
+    .catalog-skeleton {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+
+    .catalog-hero__filters {
+        top: 72px;
+    }
+}
+
+@media (max-width: 768px) and (min-width: 569px) {
+    .catalog-hero {
+        padding: 64px 14px 82px;
     }
 
     .catalog-hero__heading {
@@ -366,10 +433,90 @@
 
     .catalog-hero__panel {
         padding: 18px;
+        border-radius: 18px;
     }
 
     .catalog-hero__toolbar {
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    .catalog-grid {
+        grid-template-columns: repeat(2, minmax(200px, 1fr));
+        gap: 14px;
+    }
+
+    .catalog-skeleton {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+
+    .catalog-hero__filters {
+        top: 64px;
+    }
+}
+
+@media (max-width: 568px) and (min-width: 321px) {
+    .catalog-hero {
+        padding: 60px 12px 76px;
+    }
+
+    .catalog-hero__heading {
+        gap: 14px;
+    }
+
+    .catalog-hero__panel {
+        padding: 16px;
+        border-radius: 16px;
+    }
+
+    .catalog-hero__toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .catalog-hero__subtitle {
+        max-width: 100%;
+        line-height: 1.55;
+    }
+
+    .catalog-hero__filters {
+        top: 58px;
+    }
+
+    .catalog-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .catalog-skeleton {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+}
+
+@media (max-width: 320px) {
+    .catalog-hero {
+        padding: 54px 12px 70px;
+    }
+
+    .catalog-hero__heading {
+        gap: 12px;
+    }
+
+    .catalog-hero__panel {
+        padding: 14px;
+        border-radius: 14px;
+    }
+
+    .catalog-hero__filters {
+        top: 54px;
+    }
+
+    .catalog-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .catalog-skeleton {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     }
 }
