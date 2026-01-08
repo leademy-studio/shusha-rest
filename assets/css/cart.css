@@ -353,6 +353,10 @@
     margin-bottom: 2rem;
 }
 
+.checkout-form__section--hidden {
+    display: none;
+}
+
 .checkout-form__subtitle {
     font-size: 1.125rem;
     font-weight: 600;

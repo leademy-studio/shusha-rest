@@ -388,6 +388,20 @@ class CheckoutUI {
                         </div>
                         
                         <div class="checkout-form__section">
+                            <h3 class="checkout-form__subtitle">Способ получения</h3>
+                            <div class="checkout-form__radio-group" data-delivery-method>
+                                <label class="checkout-form__radio">
+                                    <input type="radio" name="delivery-method" value="pickup" checked required>
+                                    <span>Самовывоз</span>
+                                </label>
+                                <label class="checkout-form__radio">
+                                    <input type="radio" name="delivery-method" value="delivery">
+                                    <span>Доставка по адресу</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="checkout-form__section checkout-form__section--hidden" data-delivery-section>
                             <h3 class="checkout-form__subtitle">Адрес доставки</h3>
                             <div class="checkout-form__field">
                                 <label class="checkout-form__label" for="checkout-address">Адрес *</label>
@@ -424,15 +438,19 @@ class CheckoutUI {
                             </div>
                             <div class="checkout-form__summary-row">
                                 <span>Стоимость:</span>
-                                <span>${this.formatPrice(this.cart.getTotalPrice())}</span>
+                                <span data-summary-subtotal>${this.formatPrice(this.cart.getTotalPrice())}</span>
                             </div>
                             <div class="checkout-form__summary-row">
                                 <span>Доставка:</span>
                                 <span>Бесплатно</span>
                             </div>
+                            <div class="checkout-form__summary-row checkout-form__summary-row--discount" data-discount-row hidden>
+                                <span>Скидка 10% (самовывоз)</span>
+                                <span data-discount-amount>−0 ₽</span>
+                            </div>
                             <div class="checkout-form__summary-row checkout-form__summary-row--total">
                                 <span>Итого:</span>
-                                <span>${this.formatPrice(this.cart.getTotalPrice())}</span>
+                                <span data-summary-total>${this.formatPrice(this.cart.getTotalPrice())}</span>
                             </div>
                         </div>
                         
@@ -449,6 +467,52 @@ class CheckoutUI {
         modal.querySelector('.checkout-modal__close').addEventListener('click', () => this.close());
         modal.querySelector('#checkout-form').addEventListener('submit', (e) => this.handleSubmit(e));
         
+        const deliverySection = modal.querySelector('[data-delivery-section]');
+        const deliveryRadios = Array.from(modal.querySelectorAll('input[name="delivery-method"]'));
+        const addressInput = modal.querySelector('#checkout-address');
+        const commentInput = modal.querySelector('#checkout-comment');
+        const subtotalEl = modal.querySelector('[data-summary-subtotal]');
+        const totalEl = modal.querySelector('[data-summary-total]');
+        const discountRow = modal.querySelector('[data-discount-row]');
+        const discountAmountEl = modal.querySelector('[data-discount-amount]');
+
+        const updateDeliverySection = () => {
+            const selected = modal.querySelector('input[name="delivery-method"]:checked');
+            const isDelivery = selected?.value === 'delivery';
+            const isPickup = selected?.value === 'pickup';
+            const subtotal = this.cart.getTotalPrice();
+            const discount = isPickup ? Math.round(subtotal * 0.1) : 0;
+            const total = subtotal - discount;
+
+            deliverySection.classList.toggle('checkout-form__section--hidden', !isDelivery);
+            deliverySection.setAttribute('aria-hidden', String(!isDelivery));
+            addressInput.required = isDelivery;
+            addressInput.disabled = !isDelivery;
+            commentInput.disabled = !isDelivery;
+            if (!isDelivery) {
+                addressInput.value = '';
+                commentInput.value = '';
+            }
+
+            if (subtotalEl) {
+                subtotalEl.textContent = this.formatPrice(subtotal);
+            }
+            if (totalEl) {
+                totalEl.textContent = this.formatPrice(total);
+            }
+            if (discountRow && discountAmountEl) {
+                discountRow.hidden = !isPickup;
+                discountRow.setAttribute('aria-hidden', String(!isPickup));
+                discountAmountEl.textContent = `−${this.formatPrice(discount)}`;
+            }
+        };
+
+        deliveryRadios.forEach((radio) => {
+            radio.addEventListener('change', updateDeliverySection);
+        });
+
+        updateDeliverySection();
+
         // Маска для телефона
         const phoneInput = modal.querySelector('#checkout-phone');
         phoneInput.addEventListener('input', (e) => this.formatPhone(e));
@@ -494,6 +558,10 @@ class CheckoutUI {
         e.preventDefault();
         
         const formData = new FormData(e.target);
+        const deliveryMethod = formData.get('delivery-method');
+        const subtotal = this.cart.getTotalPrice();
+        const discount = deliveryMethod === 'pickup' ? Math.round(subtotal * 0.1) : 0;
+        const total = subtotal - discount;
         const order = {
             customer: {
                 name: formData.get('name'),
@@ -501,14 +569,20 @@ class CheckoutUI {
                 email: formData.get('email')
             },
             delivery: {
-                address: formData.get('address'),
-                comment: formData.get('comment')
+                method: deliveryMethod
             },
             payment: formData.get('payment'),
             items: this.cart.getItems(),
-            total: this.cart.getTotalPrice(),
+            subtotal,
+            discount,
+            total,
             timestamp: new Date().toISOString()
         };
+
+        if (deliveryMethod === 'delivery') {
+            order.delivery.address = formData.get('address');
+            order.delivery.comment = formData.get('comment');
+        }
         
         console.log('Заказ:', order);
         
