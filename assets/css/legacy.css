@@ -229,11 +229,11 @@
         overflow-x: auto;
         /* Добавляем отступы, чтобы первая и последняя карточки не прилипали к краям */
         width: 100vw;
-        padding: 8px calc((100vw - 75vw) / 2);
+        padding: 8px calc((100vw - 85vw) / 2);
         margin-top: 16px;
         margin-left: calc(50% - 50vw);
         margin-right: calc(50% - 50vw);
-        scroll-padding-inline: calc((100vw - 75vw) / 2);
+        scroll-padding-inline: calc((100vw - 85vw) / 2);
         scroll-snap-type: x mandatory;
         scroll-snap-stop: always;
         -webkit-overflow-scrolling: touch;
