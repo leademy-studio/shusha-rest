@@ -155,3 +155,155 @@ body {
     padding-left: 16px;
     padding-right: 16px;
 }
+
+.corporate {
+    padding: 84px 16px 96px;
+    background: linear-gradient(140deg, rgba(240, 195, 106, 0.08), rgba(126, 174, 255, 0.05));
+}
+
+.corporate__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 32px;
+    align-items: center;
+}
+
+.corporate__content {
+    display: grid;
+    gap: 16px;
+}
+
+.corporate__eyebrow {
+    margin: 0;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    font-weight: 700;
+}
+
+.corporate__title {
+    margin: 0;
+    font-size: clamp(1.9rem, 2.6vw, 2.6rem);
+    line-height: 1.2;
+    color: var(--text-primary);
+    font-family: var(--font-display);
+}
+
+.corporate__text {
+    margin: 0;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+.corporate__benefits {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+}
+
+.corporate__benefits li {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--muted-strong);
+    font-weight: 700;
+    color: var(--text-primary);
+    box-shadow: 0 12px 30px rgba(12, 22, 44, 0.08);
+}
+
+.corporate__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.corporate__cta {
+    padding: 14px 20px;
+    border-radius: var(--radius-pill);
+    border: 1px solid transparent;
+    background: var(--accent);
+    color: #0f1620;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 14px 36px rgba(240, 195, 106, 0.35);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.corporate__cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 18px 42px rgba(240, 195, 106, 0.42);
+}
+
+.corporate__link {
+    padding: 14px 18px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--muted-strong);
+    background: transparent;
+    color: var(--text-primary);
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color var(--transition), color var(--transition), border-color var(--transition);
+}
+
+.corporate__link:hover {
+    background: var(--muted);
+    border-color: var(--text-secondary);
+}
+
+.corporate__gallery {
+    display: grid;
+    gap: 12px;
+}
+
+.corporate__photo {
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid var(--panel-border);
+    box-shadow: 0 18px 50px rgba(12, 22, 44, 0.12);
+    background: #fff;
+}
+
+.corporate__photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.corporate__photo--main {
+    aspect-ratio: 4 / 3;
+}
+
+.corporate__photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+}
+
+.corporate__photo-grid img {
+    aspect-ratio: 1 / 1;
+    border-radius: 14px;
+    border: 1px solid var(--panel-border);
+    box-shadow: 0 12px 32px rgba(12, 22, 44, 0.08);
+    background: #fff;
+}
+
+@media (max-width: 768px) {
+    .corporate {
+        padding: 72px 16px 84px;
+    }
+
+    .corporate__actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .corporate__cta,
+    .corporate__link {
+        width: 100%;
+        text-align: center;
+    }
+}
