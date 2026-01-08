@@ -4,6 +4,7 @@
 }
 
 .legacy {
+    overflow: hidden; /* Предотвращает выход контента за пределы секции */
     padding: 84px 16px 96px;
 }
 
