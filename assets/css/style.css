@@ -256,7 +256,7 @@ body {
 
 .corporate__photo-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
 }
 
@@ -266,6 +266,10 @@ body {
     border: 1px solid var(--panel-border);
     box-shadow: var(--shadow-soft);
     background: #fff;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
 }
 
 @media (max-width: 768px) {
