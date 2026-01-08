@@ -110,8 +110,9 @@
                         </ul>
                     </div>
                     <figure class="legacy__video" aria-label="Видео о ресторане, формат 16:9">
+                        <video class="legacy__video-media" src="assets/images/website.mp4" muted autoplay loop playsinline preload="metadata"></video>
                         <div class="legacy__video-overlay"></div>
-                        <button class="legacy__video-button" type="button" aria-label="Смотреть видео">
+                        <button class="legacy__video-button" type="button" data-video-open aria-label="Смотреть видео в детальном режиме">
                             <span class="legacy__video-icon" aria-hidden="true"></span>
                             <span class="legacy__video-label">Смотреть видео</span>
                         </button>
@@ -152,12 +153,12 @@
                     </div>
                     <div class="corporate__gallery" aria-label="Фотогалерея мероприятий">
                         <div class="corporate__photo corporate__photo--main">
-                            <img src="assets/images/corporate-1.jpg" alt="Банкетный зал ресторана Шуша" loading="lazy">
+                            <img src="assets/images/IMG_1331.avif" alt="Интерьер банкетного зала ресторана Шуша" loading="lazy">
                         </div>
                         <div class="corporate__photo-grid">
-                            <img src="assets/images/corporate-2.jpg" alt="Сервировка банкета" loading="lazy">
-                            <img src="assets/images/corporate-3.jpg" alt="Живая музыка на мероприятии" loading="lazy">
-                            <img src="assets/images/corporate-4.jpg" alt="Танцпол для гостей" loading="lazy">
+                            <img src="assets/images/IMG_1325.avif" alt="Сервировка стола для банкета" loading="lazy">
+                            <img src="assets/images/IMG_1329.avif" alt="Детали сервировки в зале" loading="lazy">
+                            <img src="assets/images/IMG_1330.avif" alt="Зона для гостей на мероприятии" loading="lazy">
                         </div>
                     </div>
                 </div>
@@ -208,6 +209,16 @@
                 <button type="submit" class="reservation-modal__submit">Забронировать</button>
                 <p class="reservation-modal__status" id="reservation-status" aria-live="polite"></p>
             </form>
+        </div>
+    </div>
+
+    <div class="legacy-video-modal" id="legacy-video-modal" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="legacy-video-modal__overlay" data-video-close></div>
+        <div class="legacy-video-modal__dialog" role="document">
+            <button class="legacy-video-modal__close" type="button" aria-label="Закрыть видео" data-video-close>
+                <span aria-hidden="true">×</span>
+            </button>
+            <video class="legacy-video-modal__media" src="assets/images/website.mp4" muted controls playsinline preload="metadata"></video>
         </div>
     </div>
     

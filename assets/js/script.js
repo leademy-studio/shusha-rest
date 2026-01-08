@@ -137,6 +137,46 @@ corporateGalleries.forEach((gallery) => {
     });
 });
 
+const legacyVideoModal = document.getElementById("legacy-video-modal");
+const legacyVideoOpen = document.querySelector("[data-video-open]");
+const legacyVideoMedia = legacyVideoModal?.querySelector("video");
+const legacyVideoCloseButtons = legacyVideoModal
+    ? Array.from(legacyVideoModal.querySelectorAll("[data-video-close]"))
+    : [];
+
+const openLegacyVideo = () => {
+    if (!legacyVideoModal || !legacyVideoMedia) {
+        return;
+    }
+    legacyVideoModal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    legacyVideoMedia.currentTime = 0;
+    legacyVideoMedia.play().catch(() => {});
+};
+
+const closeLegacyVideo = () => {
+    if (!legacyVideoModal || !legacyVideoMedia) {
+        return;
+    }
+    legacyVideoModal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+    legacyVideoMedia.pause();
+    legacyVideoMedia.currentTime = 0;
+};
+
+if (legacyVideoOpen && legacyVideoModal) {
+    legacyVideoOpen.addEventListener("click", openLegacyVideo);
+    legacyVideoCloseButtons.forEach((button) => {
+        button.addEventListener("click", closeLegacyVideo);
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && legacyVideoModal.getAttribute("aria-hidden") === "false") {
+            closeLegacyVideo();
+        }
+    });
+}
+
 async function fetchCatalog() {
     const response = await fetch("/api/catalog");
     if (!response.ok) {
