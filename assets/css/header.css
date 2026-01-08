@@ -210,6 +210,7 @@ body {
 
     .header__nav--open {
         transform: translateX(0);
+        height: 50vh;
     }
 
     .header__menu {
@@ -500,7 +501,10 @@ body {
 @media (max-width: 768px) {
     .header__overlay {
         position: fixed;
-        inset: 0;
+        top: 72px;
+        left: 0;
+        right: 0;
+        bottom: 0;
         background: rgba(0, 0, 0, 0.5);
         opacity: 0;
         pointer-events: none;
@@ -512,5 +516,11 @@ body {
         display: block;
         opacity: 1;
         pointer-events: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .header__overlay {
+        top: 64px;
     }
 }
