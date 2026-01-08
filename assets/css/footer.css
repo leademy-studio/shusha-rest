@@ -9,7 +9,7 @@
 
 .footer__main {
     display: grid;
-    grid-template-columns: 1fr 2fr 1fr 1fr;
+    grid-template-columns: 1fr 2fr 1fr 1fr 1fr;
     gap: 3rem;
     margin-bottom: 3rem;
     padding-bottom: 3rem;
@@ -82,7 +82,8 @@
 
 /* Контакты */
 .footer__contacts,
-.footer__address {
+.footer__address,
+.footer__socials {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -118,6 +119,22 @@
 .footer__addr a:hover {
     color: #fff;
     text-decoration: underline;
+}
+
+.footer__social-links {
+    display: grid;
+    gap: 8px;
+}
+
+.footer__social-link {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.footer__social-link:hover {
+    color: #fff;
 }
 
 /* Нижняя часть */

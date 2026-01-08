@@ -112,6 +112,9 @@ function initActiveMenuLink() {
     
     menuLinks.forEach(link => {
         const href = link.getAttribute('href') || '';
+        if (!href) {
+            return;
+        }
         if (href.startsWith('#')) {
             return; // не подсвечиваем якорные ссылки как активные страницы
         }
