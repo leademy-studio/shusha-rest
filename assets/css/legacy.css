@@ -215,6 +215,9 @@
     }
     .legacy__video {
         order: 2;
+        width: 100%;
+        /* Убираем отступы по умолчанию у тега figure */
+        margin: 0;
     }
     .legacy__list {
         order: 3;
@@ -222,7 +225,8 @@
         flex-wrap: nowrap;
         gap: 16px;
         overflow-x: auto;
-        padding-bottom: 8px;
+        /* Добавляем отступы, чтобы первая и последняя карточки не прилипали к краям */
+        padding: 8px 16px;
         margin-top: 24px;
         scroll-snap-type: x mandatory;
         -webkit-overflow-scrolling: touch;
