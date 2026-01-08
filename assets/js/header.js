@@ -324,7 +324,11 @@ function initReservationModal() {
         }
 
         statusField.textContent = 'Заявка отправлена, мы свяжемся с вами для подтверждения.';
-        setTimeout(closeModal, 1200);
+        statusField.classList.add('reservation-modal__status--success');
+        setTimeout(() => {
+            statusField.classList.remove('reservation-modal__status--success');
+            closeModal();
+        }, 3000);
     });
 }
 

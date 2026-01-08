@@ -85,7 +85,8 @@
     transition: transform 0.3s ease;
 }
 
-.header__menu-link--active::after {
+.header__menu-link--active::after,
+.header__menu-link:hover::after {
     transform: scaleX(1);
 }
 
@@ -243,15 +244,19 @@ body {
 }
 
 /* Модалка бронирования */
+.
 .reservation-modal {
     position: fixed;
     inset: 0;
     z-index: 1200;
     display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
 }
 
 .reservation-modal[aria-hidden="false"] {
-    display: block;
+    display: flex;
 }
 
 .reservation-modal__overlay {
@@ -264,8 +269,7 @@ body {
 .reservation-modal__dialog {
     position: relative;
     max-width: 520px;
-    width: calc(100% - 32px);
-    margin: 64px auto;
+    width: 100%;
     background: #ffffff;
     border-radius: 16px;
     padding: 28px;
@@ -407,6 +411,11 @@ body {
     margin: 0;
     min-height: 20px;
     color: var(--text-secondary, #4b5564);
+    font-weight: 600;
+}
+
+.reservation-modal__status--success {
+    color: #1a9b55;
 }
 
 .reservation-modal__close {
@@ -432,8 +441,9 @@ body {
 
 @media (max-width: 600px) {
     .reservation-modal__dialog {
-        margin: 32px auto;
         padding: 22px;
+        max-height: calc(100vh - 48px);
+        overflow-y: auto;
     }
 
     .reservation-modal__counter input {
