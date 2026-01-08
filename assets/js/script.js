@@ -27,6 +27,9 @@ const popularGrid = document.querySelector(".popular__grid");
 if (heroPanel && titleElement && descriptionElement && sliderSteps.length) {
     let currentIndex = 0;
     let autoRotate;
+    let touchStartX = 0;
+    let touchStartY = 0;
+    const swipeThreshold = 40;
 
     const setSlide = (index) => {
         currentIndex = (index + slides.length) % slides.length;
@@ -65,9 +68,74 @@ if (heroPanel && titleElement && descriptionElement && sliderSteps.length) {
         });
     });
 
+    const handleTouchStart = (event) => {
+        const touch = event.changedTouches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+    };
+
+    const handleTouchEnd = (event) => {
+        const touch = event.changedTouches[0];
+        const deltaX = touch.clientX - touchStartX;
+        const deltaY = touch.clientY - touchStartY;
+
+        if (Math.abs(deltaX) < swipeThreshold || Math.abs(deltaX) < Math.abs(deltaY)) {
+            return;
+        }
+
+        if (deltaX < 0) {
+            setSlide(currentIndex + 1);
+        } else {
+            setSlide(currentIndex - 1);
+        }
+        resetAutoRotate();
+    };
+
+    heroPanel.addEventListener("touchstart", handleTouchStart, { passive: true });
+    heroPanel.addEventListener("touchend", handleTouchEnd, { passive: true });
+
     setSlide(0);
     startAutoRotate();
 }
+
+const corporateGalleries = Array.from(document.querySelectorAll(".corporate__gallery"));
+
+corporateGalleries.forEach((gallery) => {
+    const mainImage = gallery.querySelector(".corporate__photo--main img");
+    const thumbnails = Array.from(gallery.querySelectorAll(".corporate__photo-grid img"));
+
+    if (!mainImage || !thumbnails.length) {
+        return;
+    }
+
+    const swapImages = (thumb) => {
+        if (!thumb || thumb === mainImage) {
+            return;
+        }
+
+        const mainSrc = mainImage.src;
+        const mainAlt = mainImage.alt;
+
+        mainImage.src = thumb.src;
+        mainImage.alt = thumb.alt || mainAlt;
+
+        thumb.src = mainSrc;
+        thumb.alt = mainAlt;
+    };
+
+    thumbnails.forEach((thumb) => {
+        thumb.setAttribute("role", "button");
+        thumb.setAttribute("tabindex", "0");
+
+        thumb.addEventListener("click", () => swapImages(thumb));
+        thumb.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                swapImages(thumb);
+            }
+        });
+    });
+});
 
 async function fetchCatalog() {
     const response = await fetch("/api/catalog");

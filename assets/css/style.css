@@ -276,15 +276,43 @@ body {
     .corporate__grid {
         display: flex;
         flex-direction: column;
-        gap: 24px;
-    }
-
-    .corporate__gallery {
-        order: 2;
+        gap: 18px;
     }
 
     .corporate__content {
+        display: contents;
+    }
+
+    .corporate__eyebrow {
         order: 1;
+    }
+
+    .corporate__title {
+        order: 2;
+    }
+
+    .corporate__gallery {
+        order: 3;
+    }
+
+    .corporate__text {
+        order: 4;
+    }
+
+    .corporate__benefits {
+        order: 5;
+    }
+
+    .corporate__actions {
+        order: 6;
+    }
+
+    .corporate__photo-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .corporate__photo-grid img {
+        cursor: pointer;
     }
 
     .corporate__actions {
