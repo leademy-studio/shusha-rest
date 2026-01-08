@@ -285,6 +285,7 @@ body {
 
     .corporate__eyebrow {
         order: 1;
+        align-self: flex-start;
     }
 
     .corporate__title {
@@ -301,6 +302,7 @@ body {
 
     .corporate__benefits {
         order: 5;
+        width: 100%;
     }
 
     .corporate__actions {
