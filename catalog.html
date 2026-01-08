@@ -40,12 +40,7 @@
                 </nav>
 
                 <div class="header__actions">
-                    <a href="tel:+73452574777" class="header__phone">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        <span>+7 (3452) 57-47-77</span>
-                    </a>
+                    <button class="header__cta" type="button" data-open-reservation>Забронировать столик</button>
 
                     <button class="header__menu-toggle" type="button" aria-label="Открыть меню" id="menu-toggle">
                         <span class="header__menu-toggle-line"></span>
@@ -99,6 +94,52 @@
             </div>
         </section>
     </main>
+
+    <div class="reservation-modal" id="reservation-modal" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="reservation-modal__overlay" data-close-reservation></div>
+        <div class="reservation-modal__dialog" role="document">
+            <button class="reservation-modal__close" type="button" aria-label="Закрыть" data-close-reservation>
+                <span aria-hidden="true">×</span>
+            </button>
+            <div class="reservation-modal__header">
+                <h3 class="reservation-modal__title">Бронирование столика</h3>
+                <p class="reservation-modal__subtitle">Оставьте заявку, и мы подтвердим бронь по телефону.</p>
+            </div>
+            <form class="reservation-modal__form" id="reservation-form" novalidate>
+                <label class="reservation-modal__field">
+                    <span class="reservation-modal__label">Дата</span>
+                    <input type="date" id="reservation-date" name="date" required>
+                </label>
+
+                <label class="reservation-modal__field">
+                    <span class="reservation-modal__label">Время</span>
+                    <select id="reservation-time" name="time" required></select>
+                </label>
+
+                <div class="reservation-modal__field">
+                    <div class="reservation-modal__label">Количество гостей</div>
+                    <div class="reservation-modal__counter" aria-label="Выбор количества гостей">
+                        <button type="button" class="reservation-modal__counter-btn" data-counter="minus" aria-label="Уменьшить">−</button>
+                        <input type="number" id="reservation-guests" name="guests" value="2" min="1" max="20" inputmode="numeric" aria-live="polite" />
+                        <button type="button" class="reservation-modal__counter-btn" data-counter="plus" aria-label="Увеличить">+</button>
+                    </div>
+                </div>
+
+                <label class="reservation-modal__field">
+                    <span class="reservation-modal__label">Телефон</span>
+                    <input type="tel" id="reservation-phone" name="phone" inputmode="tel" autocomplete="tel" placeholder="+7 999 999 99 99" required>
+                </label>
+
+                <label class="reservation-modal__consent">
+                    <input type="checkbox" id="reservation-consent" name="consent" required>
+                    <span>Согласен на обработку персональных данных</span>
+                </label>
+
+                <button type="submit" class="reservation-modal__submit">Забронировать</button>
+                <p class="reservation-modal__status" id="reservation-status" aria-live="polite"></p>
+            </form>
+        </div>
+    </div>
     
     <footer class="footer">
         <div class="container">

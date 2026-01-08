@@ -113,7 +113,7 @@ function cleanProductName(name) {
 
 function createPopularCard({ id, name, price, imageUrl, category, description, weight }) {
     const article = document.createElement("article");
-    article.className = "popular-card";
+    article.className = "popular-card catalog-card";
 
     const figure = document.createElement("figure");
     figure.className = "popular-card__media";
@@ -245,21 +245,16 @@ function createPopularCard({ id, name, price, imageUrl, category, description, w
     detailsButton.addEventListener('click', (e) => {
         e.preventDefault();
         
-        // Toggle оверлея
         const isActive = overlay.classList.contains('active');
         
         if (isActive) {
-            // Если оверлей активен - скрываем и отменяем таймер
             overlay.classList.remove('active');
             if (overlayTimer) {
                 clearTimeout(overlayTimer);
                 overlayTimer = null;
             }
         } else {
-            // Если оверлей неактивен - показываем
             overlay.classList.add('active');
-            
-            // Скрываем через 5 секунд
             overlayTimer = setTimeout(() => {
                 overlay.classList.remove('active');
                 overlayTimer = null;
@@ -280,75 +275,42 @@ async function populatePopular() {
     }
 
     try {
-        const { items } = await fetchCatalog();
-        if (!items?.length) {
-            return;
-        }
-
-        // Фильтруем: исключаем напитки, выбираем только с изображениями
-        const filteredItems = items.filter(item => {
-            const isDrink = item.category === "Прохладительные напитки";
-            const hasImage = item.imageUrl && item.imageUrl !== null;
-            return !isDrink && hasImage;
-        });
-        
-        // Берем первые 3 товара с изображениями (не напитки)
-        const topItems = filteredItems.slice(0, 3);
-        
-        if (topItems.length === 0) {
-            // Если нет подходящих товаров, очищаем секцию
+        const { items = [] } = await fetchCatalog();
+        if (!items.length) {
             popularGrid.innerHTML = '<p style="text-align: center; color: #666;">Товары загружаются...</p>';
             return;
         }
-        
-        // Очищаем секцию и добавляем реальные товары
+
+        const normalizedItems = items.map((item, index) => ({
+            id: item.id || `popular-${index}`,
+            name: cleanProductName(item.name),
+            price: item.price,
+            imageUrl: item.imageUrl || "assets/images/default.jpg",
+            category: item.category,
+            description: item.description || "",
+            weight: extractWeight(item.name)
+        }));
+
+        const primaryPool = normalizedItems.filter((item) => item.category !== "Прохладительные напитки");
+        const withImages = primaryPool.filter((item) => Boolean(item.imageUrl));
+        const fallbackPool = normalizedItems.filter((item) => !withImages.includes(item));
+
+        const combined = [...withImages, ...fallbackPool];
+        const topItems = combined.slice(0, 4);
+
+        if (!topItems.length) {
+            popularGrid.innerHTML = '<p style="text-align: center; color: #666;">Товары загружаются...</p>';
+            return;
+        }
+
         popularGrid.innerHTML = "";
         topItems.forEach((item) => {
-            // Нормализуем данные товара
-            const normalizedItem = {
-                id: item.id,
-                name: cleanProductName(item.name),
-                price: item.price,
-                imageUrl: item.imageUrl,
-                category: item.category,
-                description: item.description || '',
-                weight: extractWeight(item.name)
-            };
-            popularGrid.appendChild(createPopularCard(normalizedItem));
+            popularGrid.appendChild(createPopularCard(item));
         });
     } catch (error) {
-        // При ошибке очищаем секцию
         console.warn("Failed to load catalog:", error);
         popularGrid.innerHTML = '<p style="text-align: center; color: #666;">Не удалось загрузить товары</p>';
     }
-}
-
-// Функции для работы с весом и названиями
-function extractWeight(name) {
-    const patterns = [
-        /\((\d+\s*(?:гр|г|мл|л|кг|шт))\)/i,
-        /(\d+\s*(?:гр|г|мл|л|кг|шт))\*/i,
-        /(\d+\s*(?:гр|г|мл|л|кг|шт))$/i
-    ];
-    
-    for (const pattern of patterns) {
-        const match = name.match(pattern);
-        if (match) {
-            return match[1].trim();
-        }
-    }
-    return null;
-}
-
-function cleanProductName(name) {
-    let cleaned = name
-        .replace(/\(\d+\s*(?:гр|г|мл|л|кг|шт)\)/gi, '')
-        .replace(/\d+\s*(?:гр|г|мл|л|кг|шт)\*/gi, '')
-        .replace(/\s+\d+\s*(?:гр|г|мл|л|кг|шт)$/gi, '')
-        .replace(/\*+$/g, '')
-        .replace(/\s+/g, ' ')
-        .trim();
-    return cleaned;
 }
 
 populatePopular();
