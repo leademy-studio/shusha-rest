@@ -23,21 +23,6 @@ const descriptionElement = document.getElementById("hero-description");
 const sliderSteps = Array.from(document.querySelectorAll(".hero__slider-step"));
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const popularGrid = document.querySelector(".popular__grid");
-const legacyList = document.querySelector(".legacy__list");
-const legacyViewport = window.matchMedia("(max-width: 768px)");
-
-const resetLegacyScroll = () => {
-    if (!legacyList || !legacyViewport.matches) {
-        return;
-    }
-    legacyList.scrollLeft = 0;
-};
-
-if (legacyList) {
-    resetLegacyScroll();
-    window.addEventListener("load", resetLegacyScroll);
-    legacyViewport.addEventListener("change", resetLegacyScroll);
-}
 
 if (heroPanel && titleElement && descriptionElement && sliderSteps.length) {
     let currentIndex = 0;
