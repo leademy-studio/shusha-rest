@@ -199,12 +199,12 @@
 
 @media (max-width: 768px) {
     .legacy {
-        padding: 64px 14px 80px;
+        padding: 56px 14px 72px;
     }
     .legacy__inner {
         display: flex;
         flex-direction: column;
-        gap: 24px;
+        gap: 18px;
     }
     .legacy__content {
         display: contents;
@@ -214,20 +214,22 @@
         order: 1;
     }
     .legacy__video {
-        order: 3;
+        order: 2;
         width: 100%;
+        height: clamp(170px, 42vw, 230px);
+        aspect-ratio: auto;
         /* Убираем отступы по умолчанию у тега figure */
         margin: 0;
     }
     .legacy__list {
-        order: 2;
+        order: 3;
         display: flex;
         flex-wrap: nowrap;
         gap: 16px;
         overflow-x: auto;
         /* Добавляем отступы, чтобы первая и последняя карточки не прилипали к краям */
         padding: 8px 16px;
-        margin-top: 24px;
+        margin-top: 16px;
         scroll-snap-type: x mandatory;
         -webkit-overflow-scrolling: touch;
     }
