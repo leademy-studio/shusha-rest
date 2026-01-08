@@ -96,12 +96,17 @@ function initActiveMenuLink() {
     const currentPath = window.location.pathname;
     
     menuLinks.forEach(link => {
+        const href = link.getAttribute('href') || '';
+        if (href.startsWith('#')) {
+            return; // не подсвечиваем якорные ссылки как активные страницы
+        }
+
         const linkPath = new URL(link.href).pathname;
-        
-        // Exact match or index page
-        if (linkPath === currentPath || 
-            (currentPath === '/' && linkPath === '/') ||
-            (currentPath.includes(linkPath) && linkPath !== '/')) {
+
+        const isExact = linkPath === currentPath;
+        const isIndex = currentPath === '/' && linkPath === '/';
+
+        if (isExact || isIndex) {
             link.classList.add('header__menu-link--active');
         }
     });
