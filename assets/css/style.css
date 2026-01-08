@@ -273,6 +273,20 @@ body {
         padding: 72px 16px 84px;
     }
 
+    .corporate__grid {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .corporate__gallery {
+        order: 2;
+    }
+
+    .corporate__content {
+        order: 1;
+    }
+
     .corporate__actions {
         flex-direction: column;
         align-items: stretch;
