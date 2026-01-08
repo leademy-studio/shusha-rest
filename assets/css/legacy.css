@@ -228,21 +228,16 @@
         gap: 16px;
         overflow-x: auto;
         /* Добавляем отступы, чтобы первая и последняя карточки не прилипали к краям */
-        padding: 8px 0;
+        padding: 8px 16px;
         margin-top: 16px;
         scroll-padding-inline: 16px;
         scroll-snap-type: x mandatory;
+        scroll-snap-stop: always;
         -webkit-overflow-scrolling: touch;
     }
     .legacy__item {
-        flex: 0 0 calc(100% - 32px);
+        flex: 0 0 75vw;
         scroll-snap-align: start;
         padding: 14px;
-    }
-    .legacy__item:first-child {
-        margin-left: 16px;
-    }
-    .legacy__item:last-child {
-        margin-right: 16px;
     }
 }
