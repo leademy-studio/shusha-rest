@@ -8,24 +8,29 @@ set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
 if ! command -v docker >/dev/null 2>&1; then
-  echo '--- install docker & compose ---'
+  echo '--- install docker ---'
   apt-get update -y
-  # Если plugin недоступен, ставим docker-compose (v1)
-  if ! apt-get install -y docker.io docker-compose-plugin; then
-    apt-get install -y docker.io docker-compose
-  fi
+  apt-get install -y docker.io
   systemctl enable --now docker
 fi
 
-# Определяем доступную команду compose
-if docker compose version >/dev/null 2>&1; then
-  COMPOSE="docker compose"
-elif command -v docker-compose >/dev/null 2>&1; then
-  COMPOSE="docker-compose"
-else
-  echo 'Compose not installed. Exiting.'
-  exit 1
+# Устанавливаем docker compose v2 (plugin). Если пакета нет в репо — добавляем официальный docker repo.
+if ! docker compose version >/dev/null 2>&1; then
+  echo '--- install docker compose plugin (v2) ---'
+  if ! apt-get install -y docker-compose-plugin; then
+    echo '--- add Docker APT repo and retry compose plugin ---'
+    apt-get install -y ca-certificates curl gnupg
+    install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    chmod a+r /etc/apt/keyrings/docker.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" > /etc/apt/sources.list.d/docker.list
+    apt-get update -y
+    apt-get install -y docker-compose-plugin
+  fi
 fi
+
+# Определяем доступную команду compose
+COMPOSE="docker compose"
 
 if [ ! -d "/root/shusha-rest/.git" ]; then
   echo '--- clone repo ---'
@@ -50,6 +55,20 @@ IIKO_BASE_URL=https://api-ru.iiko.services
 PORT=3000
 ENVEOF
   fi
+fi
+
+# Обрабатываем известный баг docker-compose v1 с ContainerConfig:
+# перед подъёмом чистим старые контейнеры, затем поднимаем заново.
+echo '--- compose down (remove orphans) ---'
+${COMPOSE} down --remove-orphans || true
+
+# Workaround docker-compose v1 ContainerConfig bug: force-remove app/traefik before up
+echo '--- compose rm app/traefik (force) ---'
+${COMPOSE} rm -f -v app traefik || true
+
+# Правим права на acme.json для Traefik/ACME, если файл есть
+if [ -f traefik/acme.json ]; then
+  chmod 600 traefik/acme.json || true
 fi
 
 echo '--- docker compose up --build (all services) ---'
