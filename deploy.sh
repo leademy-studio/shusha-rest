@@ -19,6 +19,15 @@ REMOTE_COMMANDS="
     fi
     systemctl enable --now docker
   fi
+  # Определяем доступную команду compose
+  if docker compose version >/dev/null 2>&1; then
+    COMPOSE="docker compose"
+  elif command -v docker-compose >/dev/null 2>&1; then
+    COMPOSE="docker-compose"
+  else
+    echo 'Compose not installed. Exiting.'
+    exit 1
+  fi
   if [ ! -d "${REMOTE_PATH}/.git" ]; then
     echo '--- clone repo ---'
     rm -rf ${REMOTE_PATH}
@@ -29,7 +38,7 @@ REMOTE_COMMANDS="
   git fetch origin main
   git reset --hard origin/main
   echo '--- docker compose up --build (all services) ---'
-  docker compose up -d --build
+  ${COMPOSE} up -d --build
   echo '--- done ---'
 "
 
