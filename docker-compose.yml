@@ -26,9 +26,10 @@ services:
     labels:
       - "traefik.enable=true"
       # Определяем роутер для сервиса 'app' для HTTPS
-      - "traefik.http.routers.shusha-rest.rule=Host(`shusha72.ru`)"
+      - "traefik.http.routers.shusha-rest.rule=Host(`shusha72.ru`,`www.shusha72.ru`)"
       - "traefik.http.routers.shusha-rest.entrypoints=websecure"
       - "traefik.http.routers.shusha-rest.tls=true"
+      - "traefik.http.routers.shusha-rest.middlewares=redirect-www@file,strip-html@file"
       # Определяем сервис и его порт
       - "traefik.http.services.shusha-rest.loadbalancer.server.port=3000"
     logging:

@@ -1,0 +1,13 @@
+# HTTP middlewares for redirects
+http:
+  middlewares:
+    redirect-www:
+      redirectRegex:
+        regex: "^https?://www\\.(.+)"
+        replacement: "https://$1"
+        permanent: true
+    strip-html:
+      redirectRegex:
+        regex: "^(https?://[^/]+/.+?)\\.html$"
+        replacement: "$1"
+        permanent: true
