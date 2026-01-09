@@ -14,6 +14,7 @@ services:
       - "./traefik/dynamic:/etc/traefik/dynamic:ro"
       # Монтируем каталог с сертификатами из traefik/certs (ранее путь указывал на несуществующий ./certs)
       - "./traefik/certs:/etc/traefik/certs:ro"
+      - "./traefik/acme.json:/etc/traefik/acme.json"
     restart: unless-stopped
 
   app:
@@ -29,6 +30,7 @@ services:
       - "traefik.http.routers.shusha-rest.rule=Host(`shusha72.ru`,`www.shusha72.ru`)"
       - "traefik.http.routers.shusha-rest.entrypoints=websecure"
       - "traefik.http.routers.shusha-rest.tls=true"
+      - "traefik.http.routers.shusha-rest.tls.certresolver=le"
       - "traefik.http.routers.shusha-rest.middlewares=redirect-www@file,strip-html@file"
       # Определяем сервис и его порт
       - "traefik.http.services.shusha-rest.loadbalancer.server.port=3000"

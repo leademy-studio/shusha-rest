@@ -15,6 +15,14 @@ entryPoints:
   websecure:
     address: ":443"
 
+certificatesResolvers:
+  le:
+    acme:
+      email: "amarillis.24@yandex.ru"
+      storage: "/etc/traefik/acme.json"
+      httpChallenge:
+        entryPoint: web
+
 providers:
   docker:
     exposedByDefault: false # Явно указываем, какие контейнеры должны быть доступны через Traefik
