@@ -47,8 +47,17 @@ git fetch origin main
 git reset --hard origin/main
 
 if [ ! -f .env ]; then
-  echo '--- create .env from .env.example (fill IIKO_API_LOGIN manually) ---'
-  cp .env.example .env
+  echo '--- create .env (fill IIKO_API_LOGIN manually) ---'
+  if [ -f .env.example ]; then
+    cp .env.example .env
+  else
+    echo '!.env.example not found, writing minimal .env'
+    cat > .env <<'ENVEOF'
+IIKO_API_LOGIN=
+IIKO_BASE_URL=https://api-ru.iiko.services
+PORT=3000
+ENVEOF
+  fi
 fi
 
 echo '--- docker compose up --build (all services) ---'
