@@ -8,6 +8,6 @@ http:
         permanent: true
     strip-html:
       redirectRegex:
-        regex: "^(https?://[^/]+/.+?)\\.html$"
-        replacement: "$1"
+        regex: "^(https?://[^/]+/.+?)\\.html(/?)$"
+        replacement: "$1$2"
         permanent: true
