@@ -3,17 +3,9 @@
 # Быстрый деплой: клонировать/обновить репо на сервере и поднять docker-compose
 set -euo pipefail
 
-REMOTE_USER="root"
-REMOTE_HOST="85.239.35.153"
-REMOTE_PATH="/root/shusha-rest"
-GIT_REPO="https://github.com/leademy-studio/shusha-rest.git"
-
-ssh "${REMOTE_USER}@${REMOTE_HOST}" 'bash -s' <<'EOF'
+ssh root@85.239.35.153 'bash -s' <<'EOF'
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
-
-REMOTE_PATH="/root/shusha-rest"
-GIT_REPO="https://github.com/leademy-studio/shusha-rest.git"
 
 if ! command -v docker >/dev/null 2>&1; then
   echo '--- install docker & compose ---'
@@ -35,13 +27,13 @@ else
   exit 1
 fi
 
-if [ ! -d "${REMOTE_PATH}/.git" ]; then
+if [ ! -d "/root/shusha-rest/.git" ]; then
   echo '--- clone repo ---'
-  rm -rf "${REMOTE_PATH}"
-  git clone "${GIT_REPO}" "${REMOTE_PATH}"
+  rm -rf "/root/shusha-rest"
+  git clone "https://github.com/leademy-studio/shusha-rest.git" "/root/shusha-rest"
 fi
 
-cd "${REMOTE_PATH}"
+cd "/root/shusha-rest"
 echo '--- git fetch/reset main ---'
 git fetch origin main
 git reset --hard origin/main
