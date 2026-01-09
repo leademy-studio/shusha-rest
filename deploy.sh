@@ -46,6 +46,11 @@ echo '--- git fetch/reset main ---'
 git fetch origin main
 git reset --hard origin/main
 
+if [ ! -f .env ]; then
+  echo '--- create .env from .env.example (fill IIKO_API_LOGIN manually) ---'
+  cp .env.example .env
+fi
+
 echo '--- docker compose up --build (all services) ---'
 ${COMPOSE} up -d --build
 
