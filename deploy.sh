@@ -10,6 +10,12 @@ GIT_REPO="https://github.com/leademy-studio/shusha-rest.git"
 
 REMOTE_COMMANDS="
   set -e
+  if ! command -v docker >/dev/null 2>&1; then
+    echo '--- install docker & compose plugin ---'
+    apt-get update -y
+    apt-get install -y docker.io docker-compose-plugin
+    systemctl enable --now docker
+  fi
   if [ ! -d "${REMOTE_PATH}/.git" ]; then
     echo '--- clone repo ---'
     rm -rf ${REMOTE_PATH}
