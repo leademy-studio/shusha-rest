@@ -32,6 +32,10 @@ app.get("/catalog", (_, res) => {
     res.sendFile(path.join(__dirname, "catalog.html"));
 });
 
+app.get(["/contacts", "/contacts/"], (_, res) => {
+    res.sendFile(path.join(__dirname, "contacts.html"));
+});
+
 app.get("/api/catalog", async (_, res) => {
     try {
         // Пробуем загрузить из iiko API
