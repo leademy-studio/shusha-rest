@@ -1,14 +1,35 @@
 version: "3.8"
 
 services:
+  traefik:
+    image: "traefik:v2.10"
+    container_name: "traefik"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080" # Dashboard
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik/traefik.yml:/etc/traefik/traefik.yml:ro"
+      - "./traefik/dynamic:/etc/traefik/dynamic:ro"
+      - "./certs:/etc/traefik/certs:ro"
+    restart: unless-stopped
+
   app:
     build: .
-    ports:
-      - "${PORT:-3000}:3000"
+    # Секция 'ports' удалена, так как Traefik будет управлять трафиком.
     env_file:
       - .env
     environment:
       - NODE_ENV=production
+    labels:
+      - "traefik.enable=true"
+      # Определяем роутер для сервиса 'app' для HTTPS
+      - "traefik.http.routers.shusha-rest.rule=Host(`shusha72.ru`)"
+      - "traefik.http.routers.shusha-rest.entrypoints=websecure"
+      - "traefik.http.routers.shusha-rest.tls=true"
+      # Определяем сервис и его порт
+      - "traefik.http.services.shusha-rest.loadbalancer.server.port=3000"
     logging:
       driver: "json-file"
       options:

@@ -1,0 +1,2 @@
+password: Os*lzfnjD7CU
+ssh root@109.69.22.164

@@ -1,0 +1,26 @@
+# Статическая конфигурация Traefik
+api:
+  dashboard: true
+  insecure: true # Включаем dashboard на порту 8080 без аутентификации (только для разработки)
+
+entryPoints:
+  web:
+    address: ":80"
+    # Глобальное перенаправление с HTTP на HTTPS
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+  websecure:
+    address: ":443"
+
+providers:
+  docker:
+    exposedByDefault: false # Явно указываем, какие контейнеры должны быть доступны через Traefik
+  file:
+    directory: /etc/traefik/dynamic # Путь к динамической конфигурации (для сертификатов)
+    watch: true
+
+log:
+  level: INFO
