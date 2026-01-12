@@ -9,10 +9,9 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./traefik/traefik.yml:/etc/traefik/traefik.yml:ro"
-      - "./traefik/dynamic:/etc/traefik/dynamic:ro"
-      # Монтируем каталог с сертификатами из traefik/certs (ранее путь указывал на несуществующий ./certs)
-      - "./traefik/certs:/etc/traefik/certs:ro"
-      - "./traefik/acme.json:/etc/traefik/acme.json"
+      - "/etc/traefik/shusha/dynamic:/etc/traefik/dynamic:ro"
+      - "/etc/traefik/shusha/certs:/etc/traefik/certs:ro"
+      - "/etc/traefik/shusha/acme.json:/etc/traefik/acme.json"
     restart: unless-stopped
 
   app:
