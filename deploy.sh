@@ -43,46 +43,6 @@ echo '--- git fetch/reset main ---'
 git fetch origin main
 git reset --hard origin/main
 
-# Ensure TLS certificates are in place before touching containers
-CERT_DIR="/root/shusha-rest/traefik/certs"
-mkdir -p "$CERT_DIR"
-if [ ! -f "$CERT_DIR/cert.pem" ] || [ ! -f "$CERT_DIR/key.pem" ]; then
-  cat <<'CERTMSG'
-!!! TLS certificates not found in traefik/certs.
-Please upload your existing cert.pem and key.pem before deploying to avoid triggering new issuance.
-CERTMSG
-  exit 1
-fi
-
-chmod 644 "$CERT_DIR/cert.pem" || true
-chmod 600 "$CERT_DIR/key.pem" || true
-
-# Гарантируем наличие статической конфигурации сертификатов
-COMPOSE_FILE="/root/shusha-rest/docker-compose.yml"
-STATIC_CERT_CONFIG="/root/shusha-rest/traefik/dynamic/certs.yml"
-cat > "$STATIC_CERT_CONFIG" <<'YAML'
-tls:
-  certificates:
-    - certFile: /etc/traefik/certs/cert.pem
-      keyFile: /etc/traefik/certs/key.pem
-YAML
-
-GUARD_SCRIPT="/root/shusha-rest/scripts/renew_on_last_day.sh"
-if [ -f "$GUARD_SCRIPT" ]; then
-  chmod +x "$GUARD_SCRIPT"
-else
-  echo "!!! cert guard script not found at $GUARD_SCRIPT"
-fi
-
-CRON_FILE="/etc/cron.d/shusha-cert-guard"
-if [ -f "$GUARD_SCRIPT" ]; then
-  cat > "$CRON_FILE" <<'CRON'
-SHELL=/bin/bash
-PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-0 * * * * root /root/shusha-rest/scripts/renew_on_last_day.sh >> /var/log/shusha-cert-guard.log 2>&1
-CRON
-fi
-
 if [ ! -f .env ]; then
   echo '--- create .env (fill IIKO_API_LOGIN manually) ---'
   if [ -f .env.example ]; then
@@ -106,18 +66,8 @@ ${COMPOSE} down --remove-orphans || true
 echo '--- compose rm app/traefik (force) ---'
 ${COMPOSE} rm -f -v app traefik || true
 
-# Правим права на acme.json для Traefik/ACME, если файл есть
-if [ -f traefik/acme.json ]; then
-  chmod 600 traefik/acme.json || true
-fi
-
 echo '--- docker compose up --build (all services) ---'
 ${COMPOSE} up -d --build
-
-if [ -x "$GUARD_SCRIPT" ]; then
-  echo '--- apply cert last-day policy ---'
-  "$GUARD_SCRIPT"
-fi
 
 echo '--- done ---'
 EOF
