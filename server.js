@@ -1,3 +1,31 @@
+app.post("/api/reservation", async (req, res) => {
+    const { date, time, guests, phone } = req.body || {};
+    if (!date || !time || !guests || !phone) {
+        return res.status(400).json({ success: false, message: "Некорректные данные бронирования" });
+    }
+
+    try {
+        const message = formatReservationForTelegram({ date, time, guests, phone });
+        if (TELEGRAM_TOKEN && TELEGRAM_CHAT_ID) {
+            await sendTelegramNotification(message);
+        }
+        res.status(200).json({ success: true, message: "Заявка отправлена" });
+    } catch (error) {
+        logTelegramError && logTelegramError(error && error.stack ? error.stack : String(error));
+        res.status(500).json({ success: false, message: "Ошибка отправки в Telegram" });
+    }
+});
+
+function formatReservationForTelegram({ date, time, guests, phone }) {
+    return [
+        '*📝 Новая заявка на бронирование!*',
+        '',
+        `*Дата:* ${date}`,
+        `*Время:* ${time}`,
+        `*Гостей:* ${guests}`,
+        `*Телефон:* \`${phone}\``,
+    ].join('\n');
+}
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";

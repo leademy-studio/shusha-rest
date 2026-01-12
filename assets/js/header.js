@@ -330,7 +330,7 @@ function initReservationModal() {
         phoneInput.value = formatPhone(phoneInput.value);
     });
 
-    form.addEventListener('submit', (event) => {
+    form.addEventListener('submit', async (event) => {
         event.preventDefault();
         statusField.textContent = '';
 
@@ -346,12 +346,33 @@ function initReservationModal() {
             return;
         }
 
-        statusField.textContent = 'Заявка отправлена, мы свяжемся с вами для подтверждения.';
-        statusField.classList.add('reservation-modal__status--success');
-        setTimeout(() => {
-            statusField.classList.remove('reservation-modal__status--success');
-            closeModal();
-        }, 3000);
+        // Собираем данные формы
+        const reservationData = {
+            date: dateInput.value,
+            time: timeSelect.value,
+            guests: guestsInput.value,
+            phone: phoneInput.value,
+        };
+
+        try {
+            const response = await fetch('/api/reservation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(reservationData)
+            });
+            if (response.ok) {
+                statusField.textContent = 'Заявка отправлена, мы свяжемся с вами для подтверждения.';
+                statusField.classList.add('reservation-modal__status--success');
+                setTimeout(() => {
+                    statusField.classList.remove('reservation-modal__status--success');
+                    closeModal();
+                }, 3000);
+            } else {
+                statusField.textContent = 'Ошибка отправки заявки. Попробуйте позже.';
+            }
+        } catch (err) {
+            statusField.textContent = 'Ошибка сети. Попробуйте позже.';
+        }
     });
 }
 
