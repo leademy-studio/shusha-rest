@@ -282,17 +282,34 @@ async function sendTelegramNotification(text) {
         parse_mode: "Markdown"
     };
 
-    const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-    });
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
 
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Telegram API error: ${response.status} - ${errorData.description}`);
+        if (!response.ok) {
+            const errorData = await response.json();
+            logTelegramError(`Telegram API error: ${response.status} - ${errorData.description}`);
+            throw new Error(`Telegram API error: ${response.status} - ${errorData.description}`);
+        }
+        console.log("Telegram notification sent successfully.");
+    } catch (err) {
+        logTelegramError(err && err.stack ? err.stack : String(err));
+        throw err;
     }
-    console.log("Telegram notification sent successfully.");
+}
+
+function logTelegramError(message) {
+    const fs = require('fs');
+    const logPath = path.join(__dirname, 'telegram_error.log');
+    const logMsg = `[${new Date().toISOString()}] ${message}\n`;
+    try {
+        fs.appendFileSync(logPath, logMsg, 'utf8');
+    } catch (e) {
+        console.error('Failed to write to telegram_error.log:', e);
+    }
 }
 
 app.listen(PORT, () => {
