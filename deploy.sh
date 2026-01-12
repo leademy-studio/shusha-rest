@@ -43,6 +43,20 @@ echo '--- git fetch/reset main ---'
 git fetch origin main
 git reset --hard origin/main
 
+# Ensure TLS certificates are in place before touching containers
+CERT_DIR="/root/shusha-rest/traefik/certs"
+mkdir -p "$CERT_DIR"
+if [ ! -f "$CERT_DIR/cert.pem" ] || [ ! -f "$CERT_DIR/key.pem" ]; then
+  cat <<'CERTMSG'
+!!! TLS certificates not found in traefik/certs.
+Please upload your existing cert.pem and key.pem before deploying to avoid triggering new issuance.
+CERTMSG
+  exit 1
+fi
+
+chmod 644 "$CERT_DIR/cert.pem" || true
+chmod 600 "$CERT_DIR/key.pem" || true
+
 if [ ! -f .env ]; then
   echo '--- create .env (fill IIKO_API_LOGIN manually) ---'
   if [ -f .env.example ]; then

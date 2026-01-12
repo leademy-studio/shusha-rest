@@ -3,3 +3,8 @@
 
 # Node dependencies
 /node_modules/
+
+# TLS assets (never commit live certificates)
+traefik/certs/*.pem
+traefik/certs/*.key
+traefik/acme.json
