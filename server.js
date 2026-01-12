@@ -3,6 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import fetch from "node-fetch";
+import fs from "fs";
 
 dotenv.config();
 
@@ -72,7 +73,6 @@ app.get("/api/catalog", async (_, res) => {
         }
 
         // Фоллбэк: загружаем статическое меню
-        const fs = await import("fs");
         const staticMenuPath = path.join(__dirname, "static-menu.json");
         
         if (fs.existsSync(staticMenuPath)) {
@@ -331,7 +331,6 @@ async function sendTelegramNotification(text) {
 }
 
 function logTelegramError(message) {
-    const fs = require('fs');
     const logPath = path.join(__dirname, 'telegram_error.log');
     const logMsg = `[${new Date().toISOString()}] ${message}\n`;
     try {
