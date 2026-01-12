@@ -3,24 +3,7 @@
 # Быстрый деплой: клонировать/обновить репо на сервере и поднять docker-compose
 set -euo pipefail
 
-REMOTE_HOST="root@85.239.35.153"
-REMOTE_CERT_DIR="/root/shusha-rest/traefik/certs"
-LOCAL_CERT="traefik/certs/cert.pem"
-LOCAL_KEY="traefik/certs/key.pem"
-
-for file in "$LOCAL_CERT" "$LOCAL_KEY"; do
-  if [ ! -f "$file" ]; then
-    echo "Missing TLS artifact: $file"
-    exit 1
-  fi
-done
-
-echo '--- upload TLS certificates ---'
-ssh "$REMOTE_HOST" "mkdir -p '$REMOTE_CERT_DIR'"
-scp "$LOCAL_CERT" "$REMOTE_HOST:$REMOTE_CERT_DIR/cert.pem"
-scp "$LOCAL_KEY" "$REMOTE_HOST:$REMOTE_CERT_DIR/key.pem"
-
-ssh "$REMOTE_HOST" 'bash -s' <<'EOF'
+ssh root@85.239.35.153 'bash -s' <<'EOF'
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
@@ -74,11 +57,20 @@ fi
 chmod 644 "$CERT_DIR/cert.pem" || true
 chmod 600 "$CERT_DIR/key.pem" || true
 
-STATIC_CERT_CONFIG="/root/shusha-rest/traefik/dynamic/certs.yml"
-if [ ! -f "$STATIC_CERT_CONFIG" ]; then
-  echo '--- ERROR: traefik/dynamic/certs.yml must exist locally and contain the static certificate mapping ---'
-  exit 1
+# Гарантируем, что Traefik использует статические сертификаты, а не инициирует новый ACME-запрос
+COMPOSE_FILE="/root/shusha-rest/docker-compose.yml"
+if grep -q 'traefik.http.routers.shusha-rest.tls.certresolver' "$COMPOSE_FILE"; then
+  echo '--- remove tls.certresolver label ---'
+  sed -i '/traefik.http.routers.shusha-rest.tls.certresolver/d' "$COMPOSE_FILE"
 fi
+
+STATIC_CERT_CONFIG="/root/shusha-rest/traefik/dynamic/certs.yml"
+cat > "$STATIC_CERT_CONFIG" <<'YAML'
+tls:
+  certificates:
+    - certFile: /etc/traefik/certs/cert.pem
+      keyFile: /etc/traefik/certs/key.pem
+YAML
 
 if [ ! -f .env ]; then
   echo '--- create .env (fill IIKO_API_LOGIN manually) ---'
