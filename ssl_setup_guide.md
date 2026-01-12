@@ -36,18 +36,19 @@
         labels:
           - "traefik.enable=true"
           # Правило, указывающее, для какого домена этот роутер
-          - "traefik.http.routers.leademy-app.rule=Host(`leademy.digital`)" 
+          - "traefik.http.routers.shusha-rest.rule=Host(`shusha72.ru`,`www.shusha72.ru`)"
           # Включаем TLS для этого роутера
-          - "traefik.http.routers.leademy-app.tls=true"
+          - "traefik.http.routers.shusha-rest.tls=true"
           # Указываем Traefik использовать наш резолвер 'letsencrypt'
-          - "traefik.http.routers.leademy-app.tls.certresolver=letsencrypt"
+          # (В этом проекте добавляется скриптом scripts/renew_on_last_day.sh в последний день валидности)
+          - "traefik.http.routers.shusha-rest.tls.certresolver=letsencrypt"
         ```
 
 *   **`traefik/acme.json`**: Файл для хранения сертификатов. При первом запуске он должен быть пустым, но существующим.
 
 ### Пошаговая инструкция по настройке
 
-1.  **Настройте DNS**: Убедитесь, что A-запись (и AAAA, если используете IPv6) для вашего домена (например, `leademy.digital` и `www.leademy.digital`) указывает на публичный IP-адрес сервера, где запущен Docker. Это необходимо для прохождения `httpChallenge`.
+1.  **Настройте DNS**: Убедитесь, что A-запись (и AAAA, если используете IPv6) для вашего домена (`shusha72.ru` и `www.shusha72.ru`) указывает на публичный IP-адрес сервера, где запущен Docker. Это необходимо для прохождения `httpChallenge`.
 
 2.  **Укажите Email**: Откройте `traefik/traefik.yml` и в секции `certificatesResolvers.letsencrypt.acme` укажите ваш реальный email-адрес.
 
@@ -61,7 +62,7 @@
             entryPoint: web
     ```
 
-3.  **Проверьте метки в Docker Compose**: Убедитесь, что в `docker-compose.yml` у сервиса `nginx` (или другого целевого сервиса) в `labels` указаны корректные домены в правилах `Host(...)` и присутствует метка `traefik.http.routers.НАЗВАНИЕ_РОУТЕРА.tls.certresolver=letsencrypt`. Проект уже настроен для доменов `leademy.digital`, `www.leademy.digital` и `leademy.studio`.
+3.  **Проверьте метки в Docker Compose**: Убедитесь, что в `docker-compose.yml` у сервиса `app` (или другого целевого сервиса) в `labels` указаны корректные домены в правилах `Host(...)`. Метка `traefik.http.routers.НАЗВАНИЕ_РОУТЕРА.tls.certresolver=letsencrypt` в этом проекте управляется скриптом `scripts/renew_on_last_day.sh` и добавляется только в последний день валидности сертификата. Проект уже настроен для доменов `shusha72.ru` и `www.shusha72.ru`.
 
 4.  **Создайте и настройте `acme.json`**: Если файла `traefik/acme.json` не существует, создайте его с пустым содержимым:
 
@@ -88,7 +89,7 @@
     ```
 
     При успешном получении вы увидите сообщения, похожие на:
-    `time="..." level=debug msg="legolog: [INFO] [leademy.digital] acme: Server responded with a certificate."`
+    `time="..." level=debug msg="legolog: [INFO] [shusha72.ru] acme: Server responded with a certificate."`
     `time="..." level=debug msg="Certificates obtained for domains..."`
 
     После этого файл `acme.json` заполнится данными о сертификатах.
@@ -113,13 +114,13 @@
 
 ### Ключевые файлы и параметры
 
-*   **`traefik/certs/`**: Директория для хранения ваших файлов сертификатов. В проекте уже есть `leademy.crt` и `leademy-privatekey.key`.
+*   **`traefik/certs/`**: Директория для хранения ваших файлов сертификатов (если используется ручной режим).
 *   **`traefik/dynamic/certs.yml`**: Файл, описывающий, какие сертификаты нужно загрузить. В текущем проекте он закомментирован.
     ```yaml
     # tls:
     #   certificates:
-    #     - certFile: /etc/traefik/certs/leademy.crt
-    #       keyFile: /etc/traefik/certs/leademy-privatekey.key
+    #     - certFile: /etc/traefik/certs/shusha72.ru.crt
+    #       keyFile: /etc/traefik/certs/shusha72.ru.key
     ```
     Пути `certFile` и `keyFile` указываются относительно файловой системы *внутри контейнера* Traefik.
 
@@ -144,7 +145,7 @@
 
     ```yaml
     # Было:
-    # - "traefik.http.routers.leademy-app.tls.certresolver=letsencrypt"
+    # - "traefik.http.routers.shusha-rest.tls.certresolver=letsencrypt"
     
     # Стало (этой строки просто не должно быть):
     ```

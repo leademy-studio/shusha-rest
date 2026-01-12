@@ -57,13 +57,8 @@ fi
 chmod 644 "$CERT_DIR/cert.pem" || true
 chmod 600 "$CERT_DIR/key.pem" || true
 
-# Гарантируем, что Traefik использует статические сертификаты, а не инициирует новый ACME-запрос
+# Гарантируем наличие статической конфигурации сертификатов
 COMPOSE_FILE="/root/shusha-rest/docker-compose.yml"
-if grep -q 'traefik.http.routers.shusha-rest.tls.certresolver' "$COMPOSE_FILE"; then
-  echo '--- remove tls.certresolver label ---'
-  sed -i '/traefik.http.routers.shusha-rest.tls.certresolver/d' "$COMPOSE_FILE"
-fi
-
 STATIC_CERT_CONFIG="/root/shusha-rest/traefik/dynamic/certs.yml"
 cat > "$STATIC_CERT_CONFIG" <<'YAML'
 tls:
@@ -71,6 +66,22 @@ tls:
     - certFile: /etc/traefik/certs/cert.pem
       keyFile: /etc/traefik/certs/key.pem
 YAML
+
+GUARD_SCRIPT="/root/shusha-rest/scripts/renew_on_last_day.sh"
+if [ -f "$GUARD_SCRIPT" ]; then
+  chmod +x "$GUARD_SCRIPT"
+else
+  echo "!!! cert guard script not found at $GUARD_SCRIPT"
+fi
+
+CRON_FILE="/etc/cron.d/shusha-cert-guard"
+if [ -f "$GUARD_SCRIPT" ]; then
+  cat > "$CRON_FILE" <<'CRON'
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+0 * * * * root /root/shusha-rest/scripts/renew_on_last_day.sh >> /var/log/shusha-cert-guard.log 2>&1
+CRON
+fi
 
 if [ ! -f .env ]; then
   echo '--- create .env (fill IIKO_API_LOGIN manually) ---'
@@ -102,6 +113,11 @@ fi
 
 echo '--- docker compose up --build (all services) ---'
 ${COMPOSE} up -d --build
+
+if [ -x "$GUARD_SCRIPT" ]; then
+  echo '--- apply cert last-day policy ---'
+  "$GUARD_SCRIPT"
+fi
 
 echo '--- done ---'
 EOF
