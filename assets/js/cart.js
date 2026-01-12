@@ -425,8 +425,8 @@ class CheckoutUI {
                                     <span>Картой курьеру</span>
                                 </label>
                                 <label class="checkout-form__radio">
-                                    <input type="radio" name="payment" value="online">
-                                    <span>Оплата онлайн</span>
+                                    <input type="radio" name="payment" value="online" disabled aria-disabled="true" title="Временно недоступно">
+                                    <span>Оплата онлайн (временно недоступно)</span>
                                 </label>
                             </div>
                         </div>
