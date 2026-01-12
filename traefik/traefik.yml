@@ -16,11 +16,12 @@ entryPoints:
     address: ":443"
 
 certificatesResolvers:
-  le:
+  letsencrypt:
     acme:
       email: "amarillis.24@yandex.ru"
       storage: "/etc/traefik/acme.json"
-      tlsChallenge: {}
+      httpChallenge:
+        entryPoint: web
 
 providers:
   docker:
