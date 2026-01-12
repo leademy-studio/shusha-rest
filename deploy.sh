@@ -57,6 +57,21 @@ fi
 chmod 644 "$CERT_DIR/cert.pem" || true
 chmod 600 "$CERT_DIR/key.pem" || true
 
+# Гарантируем, что Traefik использует статические сертификаты, а не инициирует новый ACME-запрос
+COMPOSE_FILE="/root/shusha-rest/docker-compose.yml"
+if grep -q 'traefik.http.routers.shusha-rest.tls.certresolver' "$COMPOSE_FILE"; then
+  echo '--- remove tls.certresolver label ---'
+  sed -i '/traefik.http.routers.shusha-rest.tls.certresolver/d' "$COMPOSE_FILE"
+fi
+
+STATIC_CERT_CONFIG="/root/shusha-rest/traefik/dynamic/certs.yml"
+cat > "$STATIC_CERT_CONFIG" <<'YAML'
+tls:
+  certificates:
+    - certFile: /etc/traefik/certs/cert.pem
+      keyFile: /etc/traefik/certs/key.pem
+YAML
+
 if [ ! -f .env ]; then
   echo '--- create .env (fill IIKO_API_LOGIN manually) ---'
   if [ -f .env.example ]; then
