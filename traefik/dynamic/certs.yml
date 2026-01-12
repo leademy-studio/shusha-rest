@@ -1,1 +1,4 @@
-# Отключено для перехода на Let's Encrypt
+tls:
+  certificates:
+    - certFile: /etc/traefik/certs/cert.pem
+      keyFile: /etc/traefik/certs/key.pem
