@@ -1,2 +1,4 @@
 password: eTrCZ^U3w-aF1u
 ssh root@85.239.35.153
+
+telegram_token: 8141719588:AAGTeL4Qdmk88j4ZMrHknjIOCmAz-5m6zgs

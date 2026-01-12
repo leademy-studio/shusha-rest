@@ -586,24 +586,34 @@ class CheckoutUI {
         
         console.log('Заказ:', order);
         
-        // Здесь будет отправка на сервер
+        // Отправка заказа на сервер
         try {
-            // Пример отправки (раскомментировать, когда будет API)
-            // const response = await fetch('/api/orders', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify(order)
-            // });
-            // const result = await response.json();
+            const submitButton = e.target.querySelector('.checkout-form__submit');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Отправляем...';
+
+            const response = await fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(order)
+            });
+
+            if (!response.ok) {
+                throw new Error(`Server responded with status ${response.status}`);
+            }
             
-            // Временная имитация успешного заказа
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            const result = await response.json();
+            console.log('Server response:', result);
             
             this.showSuccess();
             this.cart.clear();
         } catch (error) {
             console.error('Ошибка отправки заказа:', error);
             alert('Произошла ошибка при оформлении заказа. Пожалуйста, попробуйте снова.');
+            
+            const submitButton = e.target.querySelector('.checkout-form__submit');
+            submitButton.disabled = false;
+            submitButton.textContent = 'Подтвердить заказ';
         }
     }
 

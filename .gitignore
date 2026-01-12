@@ -1,6 +1,5 @@
-node_modules
+# Environment variables
 .env
-npm-debug.log*
-yarn-error.log*
 
-.env.example
+# Node dependencies
+/node_modules/

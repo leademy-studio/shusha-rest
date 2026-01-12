@@ -16,9 +16,14 @@ app.use(express.static(__dirname));
 const PORT = process.env.PORT || 3000;
 const IIKO_BASE_URL = process.env.IIKO_BASE_URL || "https://api-ru.iiko.services";
 const IIKO_API_LOGIN = process.env.IIKO_API_LOGIN;
+const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
 if (!IIKO_API_LOGIN) {
     console.warn("⚠️  IIKO_API_LOGIN is not set. Create .env based on .env.example.");
+}
+if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_ID) {
+    console.warn("⚠️  Telegram token or chat ID is not set in .env. Notifications will be disabled.");
 }
 
 app.use(express.json());
@@ -79,6 +84,24 @@ app.get("/api/catalog", async (_, res) => {
     } catch (error) {
         console.error("Catalog fetch failed:", error);
         res.status(500).json({ error: "Failed to load catalog", details: error.message });
+    }
+});
+
+app.post("/api/orders", async (req, res) => {
+    const order = req.body;
+
+    try {
+        console.log("Received new order:", JSON.stringify(order, null, 2));
+
+        if (TELEGRAM_TOKEN && TELEGRAM_CHAT_ID) {
+            const message = formatOrderForTelegram(order);
+            await sendTelegramNotification(message);
+        }
+
+        res.status(200).json({ success: true, message: "Order received" });
+    } catch (error) {
+        console.error("Failed to process order:", error);
+        res.status(500).json({ success: false, message: "Failed to process order" });
     }
 });
 
@@ -202,6 +225,74 @@ function simplifyNomenclature(nomenclature, organizationId) {
 
         return acc;
     }, []);
+}
+
+function formatOrderForTelegram(order) {
+    const itemsText = order.items
+        .map((item) => `- ${item.name} (x${item.quantity}) - ${item.price * item.quantity} ₽`)
+        .join("\n");
+
+    const deliveryMethod = order.delivery.method === "pickup" ? "Самовывоз" : "Доставка";
+    let deliveryInfo = "";
+    if (deliveryMethod === "Доставка") {
+        deliveryInfo = `
+*Адрес:* ${order.delivery.address || "Не указан"}
+*Комментарий:* ${order.delivery.comment || "Нет"}
+        `.trim();
+    }
+
+    const paymentMethod =
+        {
+            cash: "Наличными курьеру",
+            card: "Картой курьеру",
+            online: "Оплата онлайн"
+        }[order.payment] || "Не указан";
+
+    return `
+*🎉 Новый заказ!*
+
+*Клиент:*
+Имя: ${order.customer.name}
+Телефон: \`${order.customer.phone}\`
+Email: ${order.customer.email || "Не указан"}
+
+*Детали заказа:*
+${itemsText}
+
+*Сумма:* ${order.subtotal} ₽
+*Скидка (самовывоз):* ${order.discount} ₽
+*Итого:* *${order.total} ₽*
+
+*Получение:* ${deliveryMethod}
+${deliveryInfo}
+*Оплата:* ${paymentMethod}
+    `.trim();
+}
+
+async function sendTelegramNotification(text) {
+    if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_ID) {
+        console.warn("Telegram credentials not set, skipping notification.");
+        return;
+    }
+
+    const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
+    const payload = {
+        chat_id: TELEGRAM_CHAT_ID,
+        text: text,
+        parse_mode: "Markdown"
+    };
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Telegram API error: ${response.status} - ${errorData.description}`);
+    }
+    console.log("Telegram notification sent successfully.");
 }
 
 app.listen(PORT, () => {
