@@ -138,6 +138,7 @@ const isMiniApp = document.documentElement.dataset.miniApp === "true";
 const catalogHref = isMiniApp ? "telegram.html" : "catalog.html";
 
 const tgApp = typeof Telegram !== "undefined" && Telegram.WebApp ? Telegram.WebApp : null;
+const getTelegramUser = () => (tgApp && tgApp.initDataUnsafe ? tgApp.initDataUnsafe.user : null);
 if (tgApp && isMiniApp) {
     tgApp.ready();
     tgApp.expand();
@@ -612,7 +613,7 @@ class CheckoutUI {
             return;
         }
 
-        const user = tgApp.initDataUnsafe && tgApp.initDataUnsafe.user ? tgApp.initDataUnsafe.user : null;
+        const user = getTelegramUser();
         if (!user) {
             const cachedPhone = window.__tgContactPhone || '';
             const phoneInput = this.modal.querySelector('#checkout-phone');
@@ -699,20 +700,7 @@ class CheckoutUI {
             contactButton.textContent = 'Запрашиваем...';
             try {
                 await tgApp.requestContact();
-                const phoneInput = this.modal.querySelector('#checkout-phone');
-                let attempts = 0;
-                const timer = setInterval(() => {
-                    attempts += 1;
-                    const cachedPhone = window.__tgContactPhone || '';
-                    if (phoneInput && cachedPhone && !phoneInput.value) {
-                        this.fillPhoneValue(phoneInput, cachedPhone);
-                    }
-                    if ((phoneInput && phoneInput.value) || attempts >= 10) {
-                        clearInterval(timer);
-                        contactButton.disabled = false;
-                        contactButton.textContent = 'Заполнить из Telegram';
-                    }
-                }, 400);
+                await this.pollTelegramContact(contactButton);
             } catch (e) {
                 contactButton.disabled = false;
                 contactButton.textContent = 'Заполнить из Telegram';
@@ -727,6 +715,58 @@ class CheckoutUI {
 
         input.value = phone;
         this.formatPhone({ target: input });
+    }
+
+    async pollTelegramContact(button) {
+        const phoneInput = this.modal.querySelector('#checkout-phone');
+        if (!phoneInput) {
+            return;
+        }
+
+        const user = getTelegramUser();
+        const userId = user && user.id ? String(user.id) : '';
+        if (!userId) {
+            button.disabled = false;
+            button.textContent = 'Заполнить из Telegram';
+            return;
+        }
+
+        let attempts = 0;
+        const maxAttempts = 12;
+        const delayMs = 700;
+
+        while (attempts < maxAttempts) {
+            attempts += 1;
+
+            const cachedPhone = window.__tgContactPhone || '';
+            if (cachedPhone && !phoneInput.value) {
+                this.fillPhoneValue(phoneInput, cachedPhone);
+            }
+
+            if (phoneInput.value) {
+                break;
+            }
+
+            try {
+                const response = await fetch(`/api/telegram-contact?userId=${encodeURIComponent(userId)}`, {
+                    cache: 'no-store'
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.phone && !phoneInput.value) {
+                        this.fillPhoneValue(phoneInput, data.phone);
+                        break;
+                    }
+                }
+            } catch (e) {
+                // ignore polling errors
+            }
+
+            await new Promise((resolve) => setTimeout(resolve, delayMs));
+        }
+
+        button.disabled = false;
+        button.textContent = 'Заполнить из Telegram';
     }
 
     async handleSubmit(e) {
@@ -753,6 +793,18 @@ class CheckoutUI {
             total,
             timestamp: new Date().toISOString()
         };
+
+        if (isMiniApp && tgApp) {
+            const user = getTelegramUser();
+            if (user && user.id) {
+                order.telegram = {
+                    userId: String(user.id),
+                    username: user.username || '',
+                    firstName: user.first_name || '',
+                    lastName: user.last_name || ''
+                };
+            }
+        }
 
         if (deliveryMethod === 'delivery') {
             order.delivery.address = formData.get('address');

@@ -19,6 +19,11 @@ const IIKO_BASE_URL = process.env.IIKO_BASE_URL || "https://api-ru.iiko.services
 const IIKO_API_LOGIN = process.env.IIKO_API_LOGIN;
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+const TELEGRAM_CONTACT_POLL_MS = 5000;
+
+const telegramContactStore = new Map();
+let telegramUpdatesOffset = 0;
+let telegramPollingStarted = false;
 
 if (!IIKO_API_LOGIN) {
     console.warn("⚠️  IIKO_API_LOGIN is not set. Create .env based on .env.example.");
@@ -29,6 +34,20 @@ if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_ID) {
 
 app.use(express.json());
 app.use("/assets", express.static(path.join(__dirname, "assets")));
+
+app.get("/api/telegram-contact", (req, res) => {
+    const userId = req.query.userId ? String(req.query.userId) : "";
+    if (!userId) {
+        return res.status(400).json({ error: "userId is required" });
+    }
+
+    const entry = telegramContactStore.get(userId);
+    if (!entry) {
+        return res.status(404).json({ phone: "" });
+    }
+
+    return res.json({ phone: entry.phone, updatedAt: entry.updatedAt });
+});
 
 app.get("/", (_, res) => {
     res.sendFile(path.join(__dirname, "index.html"));
@@ -118,6 +137,17 @@ app.post("/api/orders", async (req, res) => {
         if (TELEGRAM_TOKEN && TELEGRAM_CHAT_ID) {
             const message = formatOrderForTelegram(order);
             await sendTelegramNotification(message);
+        }
+
+        if (order && order.telegram && order.telegram.userId) {
+            const confirmation = formatOrderConfirmation(order);
+            try {
+                await sendTelegramMessage(order.telegram.userId, confirmation);
+            } catch (notifyError) {
+                logTelegramError(
+                    notifyError && notifyError.stack ? notifyError.stack : String(notifyError)
+                );
+            }
         }
 
         res.status(200).json({ success: true, message: "Order received" });
@@ -302,17 +332,38 @@ ${deliveryInfo}
     `.trim();
 }
 
+function formatOrderConfirmation(order) {
+    const itemsCount = order.items ? order.items.reduce((sum, item) => sum + item.quantity, 0) : 0;
+    const total = order.total ?? order.subtotal ?? 0;
+    return [
+        "✅ Заказ успешно оформлен!",
+        "",
+        `Позиции: ${itemsCount} шт.`,
+        `Итого: ${total} ₽`,
+        "Мы свяжемся с вами для подтверждения.",
+    ].join("\n");
+}
+
 async function sendTelegramNotification(text) {
     if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_ID) {
         console.warn("Telegram credentials not set, skipping notification.");
         return;
     }
 
+    await sendTelegramMessage(TELEGRAM_CHAT_ID, text, "Markdown");
+}
+
+async function sendTelegramMessage(chatId, text, parseMode = "Markdown") {
+    if (!TELEGRAM_TOKEN || !chatId) {
+        console.warn("Telegram credentials not set, skipping notification.");
+        return;
+    }
+
     const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
     const payload = {
-        chat_id: TELEGRAM_CHAT_ID,
+        chat_id: chatId,
         text: text,
-        parse_mode: "Markdown"
+        parse_mode: parseMode
     };
 
     try {
@@ -344,6 +395,61 @@ function logTelegramError(message) {
     }
 }
 
+async function pollTelegramContacts() {
+    if (!TELEGRAM_TOKEN) {
+        return;
+    }
+
+    const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/getUpdates?offset=${telegramUpdatesOffset}`;
+
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            return;
+        }
+
+        const data = await response.json();
+        if (!data.ok) {
+            return;
+        }
+
+        const updates = Array.isArray(data.result) ? data.result : [];
+        updates.forEach((update) => {
+            if (typeof update.update_id === "number") {
+                telegramUpdatesOffset = Math.max(telegramUpdatesOffset, update.update_id + 1);
+            }
+
+            const message = update.message;
+            if (!message || !message.contact) {
+                return;
+            }
+
+            const contact = message.contact;
+            const userId = contact.user_id || (message.from ? message.from.id : null);
+            if (!userId || !contact.phone_number) {
+                return;
+            }
+
+            telegramContactStore.set(String(userId), {
+                phone: contact.phone_number,
+                updatedAt: Date.now()
+            });
+        });
+    } catch (error) {
+        logTelegramError(error && error.stack ? error.stack : String(error));
+    }
+}
+
+function startTelegramContactPolling() {
+    if (telegramPollingStarted || !TELEGRAM_TOKEN) {
+        return;
+    }
+    telegramPollingStarted = true;
+    pollTelegramContacts();
+    setInterval(pollTelegramContacts, TELEGRAM_CONTACT_POLL_MS);
+}
+
 app.listen(PORT, () => {
     console.log(`Server is running at http://localhost:${PORT}`);
+    startTelegramContactPolling();
 });

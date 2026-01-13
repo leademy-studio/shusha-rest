@@ -4,7 +4,6 @@ html[data-mini-app="true"] body {
 
 html[data-mini-app="true"] {
     --mini-fab-size: 56px;
-    --mini-fab-right: 10vw;
     --mini-fab-bottom: 20vh;
     --mini-fab-gap: 12px;
 }
@@ -47,7 +46,7 @@ html[data-mini-app="true"] .cart-button {
     width: 56px;
     height: 56px;
     bottom: var(--mini-fab-bottom);
-    right: var(--mini-fab-right);
+    right: 16px;
     border-radius: 14px;
 }
 
@@ -60,7 +59,6 @@ html[data-mini-app="true"] .cart-button__badge {
 .scroll-top-button {
     position: fixed;
     right: 16px;
-    right: var(--mini-fab-right);
     bottom: calc(var(--mini-fab-bottom) + var(--mini-fab-size) + var(--mini-fab-gap));
     width: 56px;
     height: 56px;
@@ -97,7 +95,6 @@ html[data-mini-app="true"] .cart-button__badge {
     }
 
     html[data-mini-app="true"] {
-        --mini-fab-right: 12vw;
         --mini-fab-bottom: 18vh;
     }
 }
