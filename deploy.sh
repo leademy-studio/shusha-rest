@@ -57,17 +57,37 @@ ENVEOF
   fi
 fi
 
-# Обрабатываем известный баг docker-compose v1 с ContainerConfig:
-# перед подъёмом чистим старые контейнеры, затем поднимаем заново.
-echo '--- compose down (remove orphans) ---'
-${COMPOSE} down --remove-orphans || true
+APP_IMAGE="shusha-rest-app"
+PREV_IMAGE="${APP_IMAGE}:previous"
 
-# Workaround docker-compose v1 ContainerConfig bug: force-remove app/traefik before up
-echo '--- compose rm app/traefik (force) ---'
-${COMPOSE} rm -f -v app traefik || true
+if docker image inspect "$APP_IMAGE" >/dev/null 2>&1; then
+  docker tag "$APP_IMAGE" "$PREV_IMAGE"
+fi
 
-echo '--- docker compose up --build (all services) ---'
-${COMPOSE} up -d --build
+echo '--- docker compose build (app) ---'
+if ! ${COMPOSE} build app; then
+  echo '!!! build failed, keeping existing containers'
+  exit 1
+fi
+
+echo '--- docker compose up (no down/rm) ---'
+if ! ${COMPOSE} up -d; then
+  echo '!!! compose up failed, attempting rollback'
+  if docker image inspect "$PREV_IMAGE" >/dev/null 2>&1; then
+    docker tag "$PREV_IMAGE" "$APP_IMAGE"
+    ${COMPOSE} up -d --force-recreate app || true
+  fi
+  exit 1
+fi
+
+if ! ${COMPOSE} ps --status=running --services | grep -qx 'app'; then
+  echo '!!! app not running, attempting rollback'
+  if docker image inspect "$PREV_IMAGE" >/dev/null 2>&1; then
+    docker tag "$PREV_IMAGE" "$APP_IMAGE"
+    ${COMPOSE} up -d --force-recreate app || true
+  fi
+  exit 1
+fi
 
 echo '--- done ---'
 EOF
