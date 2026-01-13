@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru" data-mini-app="true">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shusha Delivery — Telegram Mini App</title>
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/ui.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/popular.css">
+    <link rel="stylesheet" href="assets/css/catalog.css">
+    <link rel="stylesheet" href="assets/css/cart.css">
+    <link rel="stylesheet" href="assets/css/telegram-mini.css">
+    <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
+</head>
+<body class="tg-mini-app">
+    <main class="tg-main">
+        <section class="catalog-hero tg-catalog" aria-label="Каталог">
+            <div class="container tg-container">
+                <div class="catalog-hero__panel tg-panel">
+                    <div class="catalog-hero__toolbar tg-toolbar">
+                        <p class="catalog-hero__status" id="catalog-status" aria-live="polite">Загружаем меню...</p>
+                        <div class="catalog-hero__filters" id="catalog-filters" role="group" aria-label="Категории каталога"></div>
+                    </div>
+                    <div class="catalog-grid popular__grid" id="catalog-grid" role="list"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="assets/js/telegram-mini.js" defer></script>
+    <script src="assets/js/cart.js" defer></script>
+    <script src="assets/js/catalog.js" defer></script>
+</body>
+</html>

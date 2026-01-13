@@ -134,6 +134,14 @@ class ShoppingCart {
 
 // Создаем глобальный экземпляр корзины
 const cart = new ShoppingCart();
+const isMiniApp = document.documentElement.dataset.miniApp === "true";
+const catalogHref = isMiniApp ? "telegram.html" : "catalog.html";
+
+const tgApp = typeof Telegram !== "undefined" && Telegram.WebApp ? Telegram.WebApp : null;
+if (tgApp && isMiniApp) {
+    tgApp.ready();
+    tgApp.expand();
+}
 
 // UI корзины
 class CartUI {
@@ -170,6 +178,10 @@ class CartUI {
         button.addEventListener('click', () => this.openModal());
         
         document.body.appendChild(button);
+
+        if (isMiniApp) {
+            this.createScrollTopButton();
+        }
     }
 
     // Обновить счетчик товаров
@@ -179,6 +191,31 @@ class CartUI {
             this.badge.textContent = count;
             this.badge.style.display = count > 0 ? 'flex' : 'none';
         }
+    }
+
+    createScrollTopButton() {
+        const button = document.createElement('button');
+        button.className = 'scroll-top-button';
+        button.type = 'button';
+        button.setAttribute('aria-label', 'Наверх');
+        button.innerHTML = `
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        `;
+
+        const updateVisibility = () => {
+            const shouldShow = window.scrollY > 240;
+            button.classList.toggle('scroll-top-button--visible', shouldShow);
+        };
+
+        button.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        window.addEventListener('scroll', updateVisibility, { passive: true });
+        updateVisibility();
+        document.body.appendChild(button);
     }
 
     // Создать модальное окно корзины
@@ -226,7 +263,7 @@ class CartUI {
         modal.querySelector('.cart-modal__checkout').addEventListener('click', () => this.openCheckout());
         modal.querySelector('.cart-modal__empty-button').addEventListener('click', () => {
             this.closeModal();
-            window.location.href = 'catalog.html';
+            window.location.href = catalogHref;
         });
         
         document.body.appendChild(modal);
@@ -356,6 +393,22 @@ class CheckoutUI {
     }
 
     createModal() {
+        const emailField = isMiniApp
+            ? ''
+            : `
+                            <div class="checkout-form__field">
+                                <label class="checkout-form__label" for="checkout-email">Email</label>
+                                <input class="checkout-form__input" type="email" id="checkout-email" name="email">
+                            </div>
+                        `;
+        const contactButton = isMiniApp
+            ? `
+                            <button class="checkout-form__contact" type="button" data-telegram-contact>
+                                Заполнить из Telegram
+                            </button>
+                        `
+            : '';
+
         const modal = document.createElement('div');
         modal.className = 'checkout-modal';
         modal.innerHTML = `
@@ -381,10 +434,8 @@ class CheckoutUI {
                                 <label class="checkout-form__label" for="checkout-phone">Телефон *</label>
                                 <input class="checkout-form__input" type="tel" id="checkout-phone" name="phone" placeholder="+7 (___) ___-__-__" required>
                             </div>
-                            <div class="checkout-form__field">
-                                <label class="checkout-form__label" for="checkout-email">Email</label>
-                                <input class="checkout-form__input" type="email" id="checkout-email" name="email">
-                            </div>
+                            ${contactButton}
+                            ${emailField}
                         </div>
                         
                         <div class="checkout-form__section">
@@ -466,7 +517,7 @@ class CheckoutUI {
         modal.querySelector('.checkout-modal__overlay').addEventListener('click', () => this.close());
         modal.querySelector('.checkout-modal__close').addEventListener('click', () => this.close());
         modal.querySelector('#checkout-form').addEventListener('submit', (e) => this.handleSubmit(e));
-        
+
         const deliverySection = modal.querySelector('[data-delivery-section]');
         const deliveryRadios = Array.from(modal.querySelectorAll('input[name="delivery-method"]'));
         const addressInput = modal.querySelector('#checkout-address');
@@ -518,6 +569,8 @@ class CheckoutUI {
         phoneInput.addEventListener('input', (e) => this.formatPhone(e));
         
         document.body.appendChild(modal);
+        this.prefillFromTelegram();
+        this.bindTelegramContact();
     }
 
     open() {
@@ -552,6 +605,84 @@ class CheckoutUI {
         }
         
         e.target.value = formatted;
+    }
+
+    prefillFromTelegram() {
+        if (!isMiniApp || !tgApp) {
+            return;
+        }
+
+        const user = tgApp.initDataUnsafe && tgApp.initDataUnsafe.user ? tgApp.initDataUnsafe.user : null;
+        if (!user) {
+            return;
+        }
+
+        const nameInput = this.modal.querySelector('#checkout-name');
+        const phoneInput = this.modal.querySelector('#checkout-phone');
+        const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ').trim();
+        const phone = user.phone_number || user.phone || '';
+
+        if (nameInput && fullName && !nameInput.value) {
+            nameInput.value = fullName;
+        }
+        if (phoneInput && phone && !phoneInput.value) {
+            phoneInput.value = phone;
+            this.formatPhone({ target: phoneInput });
+        }
+    }
+
+    bindTelegramContact() {
+        if (!isMiniApp || !tgApp || typeof tgApp.requestContact !== 'function') {
+            return;
+        }
+
+        const contactButton = this.modal.querySelector('[data-telegram-contact]');
+        if (!contactButton) {
+            return;
+        }
+
+        const onContact = (eventData) => {
+            const phoneInput = this.modal.querySelector('#checkout-phone');
+            if (!phoneInput) {
+                return;
+            }
+
+            let phone = '';
+            const responseRaw = eventData && eventData.response ? eventData.response : null;
+            if (typeof responseRaw === 'string') {
+                try {
+                    const parsed = JSON.parse(responseRaw);
+                    phone =
+                        parsed?.phone_number ||
+                        parsed?.contact?.phone_number ||
+                        parsed?.user?.phone_number ||
+                        '';
+                } catch (e) {
+                    phone = '';
+                }
+            }
+
+            if (phone && !phoneInput.value) {
+                phoneInput.value = phone;
+                this.formatPhone({ target: phoneInput });
+            }
+
+            contactButton.disabled = false;
+            contactButton.textContent = 'Заполнить из Telegram';
+        };
+
+        tgApp.onEvent('contactRequested', onContact);
+
+        contactButton.addEventListener('click', async () => {
+            contactButton.disabled = true;
+            contactButton.textContent = 'Запрашиваем...';
+            try {
+                await tgApp.requestContact();
+            } catch (e) {
+                contactButton.disabled = false;
+                contactButton.textContent = 'Заполнить из Telegram';
+            }
+        });
     }
 
     async handleSubmit(e) {
@@ -632,7 +763,7 @@ class CheckoutUI {
         
         this.modal.querySelector('.checkout-success__button').addEventListener('click', () => {
             this.close();
-            window.location.href = 'catalog.html';
+            window.location.href = catalogHref;
         });
     }
 

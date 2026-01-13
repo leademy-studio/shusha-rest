@@ -38,6 +38,10 @@ app.get("/catalog", (_, res) => {
     res.sendFile(path.join(__dirname, "catalog.html"));
 });
 
+app.get(["/telegram", "/telegram/"], (_, res) => {
+    res.sendFile(path.join(__dirname, "telegram.html"));
+});
+
 app.get(["/contacts", "/contacts/"], (_, res) => {
     res.sendFile(path.join(__dirname, "contacts.html"));
 });
