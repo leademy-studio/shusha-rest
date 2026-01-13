@@ -614,6 +614,11 @@ class CheckoutUI {
 
         const user = tgApp.initDataUnsafe && tgApp.initDataUnsafe.user ? tgApp.initDataUnsafe.user : null;
         if (!user) {
+            const cachedPhone = window.__tgContactPhone || '';
+            const phoneInput = this.modal.querySelector('#checkout-phone');
+            if (cachedPhone && phoneInput && !phoneInput.value) {
+                this.fillPhoneValue(phoneInput, cachedPhone);
+            }
             return;
         }
 
@@ -627,6 +632,8 @@ class CheckoutUI {
         }
         if (phoneInput && phone && !phoneInput.value) {
             this.fillPhoneValue(phoneInput, phone);
+        } else if (phoneInput && !phoneInput.value && window.__tgContactPhone) {
+            this.fillPhoneValue(phoneInput, window.__tgContactPhone);
         }
     }
 
@@ -692,11 +699,20 @@ class CheckoutUI {
             contactButton.textContent = 'Запрашиваем...';
             try {
                 await tgApp.requestContact();
-                setTimeout(() => {
-                    if (this.modal) {
-                        this.prefillFromTelegram();
+                const phoneInput = this.modal.querySelector('#checkout-phone');
+                let attempts = 0;
+                const timer = setInterval(() => {
+                    attempts += 1;
+                    const cachedPhone = window.__tgContactPhone || '';
+                    if (phoneInput && cachedPhone && !phoneInput.value) {
+                        this.fillPhoneValue(phoneInput, cachedPhone);
                     }
-                }, 600);
+                    if ((phoneInput && phoneInput.value) || attempts >= 10) {
+                        clearInterval(timer);
+                        contactButton.disabled = false;
+                        contactButton.textContent = 'Заполнить из Telegram';
+                    }
+                }, 400);
             } catch (e) {
                 contactButton.disabled = false;
                 contactButton.textContent = 'Заполнить из Telegram';
