@@ -626,8 +626,7 @@ class CheckoutUI {
             nameInput.value = fullName;
         }
         if (phoneInput && phone && !phoneInput.value) {
-            phoneInput.value = phone;
-            this.formatPhone({ target: phoneInput });
+            this.fillPhoneValue(phoneInput, phone);
         }
     }
 
@@ -641,30 +640,45 @@ class CheckoutUI {
             return;
         }
 
+        const getPhoneFromPayload = (payload) => {
+            if (!payload) {
+                return '';
+            }
+
+            if (typeof payload === 'string') {
+                try {
+                    const parsed = JSON.parse(payload);
+                    return getPhoneFromPayload(parsed);
+                } catch (e) {
+                    return '';
+                }
+            }
+
+            return (
+                payload.phone_number ||
+                payload.phone ||
+                payload.contact?.phone_number ||
+                payload.user?.phone_number ||
+                payload.response?.phone_number ||
+                payload.response?.contact?.phone_number ||
+                ''
+            );
+        };
+
         const onContact = (eventData) => {
             const phoneInput = this.modal.querySelector('#checkout-phone');
             if (!phoneInput) {
                 return;
             }
 
-            let phone = '';
-            const responseRaw = eventData && eventData.response ? eventData.response : null;
-            if (typeof responseRaw === 'string') {
-                try {
-                    const parsed = JSON.parse(responseRaw);
-                    phone =
-                        parsed?.phone_number ||
-                        parsed?.contact?.phone_number ||
-                        parsed?.user?.phone_number ||
-                        '';
-                } catch (e) {
-                    phone = '';
-                }
-            }
+            const phone =
+                getPhoneFromPayload(eventData) ||
+                getPhoneFromPayload(eventData?.response) ||
+                getPhoneFromPayload(tgApp.initDataUnsafe?.user) ||
+                '';
 
             if (phone && !phoneInput.value) {
-                phoneInput.value = phone;
-                this.formatPhone({ target: phoneInput });
+                this.fillPhoneValue(phoneInput, phone);
             }
 
             contactButton.disabled = false;
@@ -678,11 +692,25 @@ class CheckoutUI {
             contactButton.textContent = 'Запрашиваем...';
             try {
                 await tgApp.requestContact();
+                setTimeout(() => {
+                    if (this.modal) {
+                        this.prefillFromTelegram();
+                    }
+                }, 600);
             } catch (e) {
                 contactButton.disabled = false;
                 contactButton.textContent = 'Заполнить из Telegram';
             }
         });
+    }
+
+    fillPhoneValue(input, phone) {
+        if (!input || !phone) {
+            return;
+        }
+
+        input.value = phone;
+        this.formatPhone({ target: input });
     }
 
     async handleSubmit(e) {

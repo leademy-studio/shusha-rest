@@ -1,29 +1,32 @@
 html[data-mini-app="true"] body {
-    background: var(--page-bg);
+    background: #ffffff;
 }
 
 html[data-mini-app="true"] .tg-main {
-    padding: 24px 0 120px;
+    padding: 0 0 120px;
 }
 
 html[data-mini-app="true"] .catalog-hero {
-    padding: 24px 12px 48px;
+    padding: 0;
 }
 
 html[data-mini-app="true"] .catalog-hero::before,
 html[data-mini-app="true"] .catalog-hero::after {
-    opacity: 0.25;
+    opacity: 0;
 }
 
 html[data-mini-app="true"] .tg-container {
-    padding-left: 12px;
-    padding-right: 12px;
+    max-width: 100%;
+    padding-left: 0;
+    padding-right: 0;
 }
 
 html[data-mini-app="true"] .catalog-hero__panel {
     margin-top: 0;
-    padding: 18px;
-    border-radius: 20px;
+    padding: 18px 12px 28px;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
 }
 
 html[data-mini-app="true"] .catalog-hero__filters {
@@ -36,7 +39,7 @@ html[data-mini-app="true"] .catalog-hero__filters {
 html[data-mini-app="true"] .cart-button {
     width: 56px;
     height: 56px;
-    bottom: 16px;
+    bottom: 20px;
     right: 16px;
     border-radius: 14px;
 }
@@ -50,7 +53,7 @@ html[data-mini-app="true"] .cart-button__badge {
 .scroll-top-button {
     position: fixed;
     right: 16px;
-    bottom: calc(16px + 56px + 12px);
+    bottom: 100px;
     width: 56px;
     height: 56px;
     border-radius: 14px;
