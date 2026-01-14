@@ -496,6 +496,25 @@
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
+.checkout-form__submit--mini {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+    text-align: center;
+}
+
+.checkout-form__submit-title {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.checkout-form__submit-meta {
+    font-size: 0.75rem;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
 .checkout-form__submit:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);

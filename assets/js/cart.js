@@ -394,21 +394,34 @@ class CheckoutUI {
     }
 
     createModal() {
-        const emailField = isMiniApp
-            ? ''
+        const contactFields = isMiniApp
+            ? `
+                            <input type="hidden" id="checkout-name" name="name">
+                            <input type="hidden" id="checkout-phone" name="phone">
+                            <button class="checkout-form__contact" type="button" data-telegram-contact>
+                                Заполнить из Telegram
+                            </button>
+                        `
             : `
+                            <div class="checkout-form__field">
+                                <label class="checkout-form__label" for="checkout-name">Имя *</label>
+                                <input class="checkout-form__input" type="text" id="checkout-name" name="name" required>
+                            </div>
+                            <div class="checkout-form__field">
+                                <label class="checkout-form__label" for="checkout-phone">Телефон *</label>
+                                <input class="checkout-form__input" type="tel" id="checkout-phone" name="phone" placeholder="+7 (___) ___-__-__" required>
+                            </div>
                             <div class="checkout-form__field">
                                 <label class="checkout-form__label" for="checkout-email">Email</label>
                                 <input class="checkout-form__input" type="email" id="checkout-email" name="email">
                             </div>
                         `;
-        const contactButton = isMiniApp
+        const submitButtonContent = isMiniApp
             ? `
-                            <button class="checkout-form__contact" type="button" data-telegram-contact>
-                                Заполнить из Telegram
-                            </button>
+                            <span class="checkout-form__submit-title">Подтвердить заказ</span>
+                            <span class="checkout-form__submit-meta" data-submit-meta>Нужен номер телефона</span>
                         `
-            : '';
+            : `Подтвердить заказ`;
 
         const modal = document.createElement('div');
         modal.className = 'checkout-modal';
@@ -427,16 +440,7 @@ class CheckoutUI {
                     <form class="checkout-form" id="checkout-form">
                         <div class="checkout-form__section">
                             <h3 class="checkout-form__subtitle">Контактные данные</h3>
-                            <div class="checkout-form__field">
-                                <label class="checkout-form__label" for="checkout-name">Имя *</label>
-                                <input class="checkout-form__input" type="text" id="checkout-name" name="name" required>
-                            </div>
-                            <div class="checkout-form__field">
-                                <label class="checkout-form__label" for="checkout-phone">Телефон *</label>
-                                <input class="checkout-form__input" type="tel" id="checkout-phone" name="phone" placeholder="+7 (___) ___-__-__" required>
-                            </div>
-                            ${contactButton}
-                            ${emailField}
+                            ${contactFields}
                         </div>
                         
                         <div class="checkout-form__section">
@@ -506,7 +510,9 @@ class CheckoutUI {
                             </div>
                         </div>
                         
-                        <button class="checkout-form__submit" type="submit">Подтвердить заказ</button>
+                        <button class="checkout-form__submit${isMiniApp ? ' checkout-form__submit--mini' : ''}" type="submit">
+                            ${submitButtonContent}
+                        </button>
                     </form>
                 </div>
             </div>
@@ -567,7 +573,9 @@ class CheckoutUI {
 
         // Маска для телефона
         const phoneInput = modal.querySelector('#checkout-phone');
-        phoneInput.addEventListener('input', (e) => this.formatPhone(e));
+        if (phoneInput) {
+            phoneInput.addEventListener('input', (e) => this.formatPhone(e));
+        }
         
         document.body.appendChild(modal);
         this.prefillFromTelegram();
@@ -613,29 +621,7 @@ class CheckoutUI {
             return;
         }
 
-        const user = getTelegramUser();
-        if (!user) {
-            const cachedPhone = window.__tgContactPhone || '';
-            const phoneInput = this.modal.querySelector('#checkout-phone');
-            if (cachedPhone && phoneInput && !phoneInput.value) {
-                this.fillPhoneValue(phoneInput, cachedPhone);
-            }
-            return;
-        }
-
-        const nameInput = this.modal.querySelector('#checkout-name');
-        const phoneInput = this.modal.querySelector('#checkout-phone');
-        const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ').trim();
-        const phone = user.phone_number || user.phone || '';
-
-        if (nameInput && fullName && !nameInput.value) {
-            nameInput.value = fullName;
-        }
-        if (phoneInput && phone && !phoneInput.value) {
-            this.fillPhoneValue(phoneInput, phone);
-        } else if (phoneInput && !phoneInput.value && window.__tgContactPhone) {
-            this.fillPhoneValue(phoneInput, window.__tgContactPhone);
-        }
+        this.updateMiniAppIdentity();
     }
 
     bindTelegramContact() {
@@ -687,6 +673,7 @@ class CheckoutUI {
 
             if (phone && !phoneInput.value) {
                 this.fillPhoneValue(phoneInput, phone);
+                this.updateMiniAppIdentity();
             }
 
             contactButton.disabled = false;
@@ -715,6 +702,52 @@ class CheckoutUI {
 
         input.value = phone;
         this.formatPhone({ target: input });
+    }
+
+    fillNameValue(input, name) {
+        if (!input || !name) {
+            return;
+        }
+        input.value = name;
+    }
+
+    updateMiniAppIdentity() {
+        if (!isMiniApp || !this.modal) {
+            return;
+        }
+
+        const nameInput = this.modal.querySelector('#checkout-name');
+        const phoneInput = this.modal.querySelector('#checkout-phone');
+        const submitButton = this.modal.querySelector('.checkout-form__submit');
+        const submitMeta = submitButton ? submitButton.querySelector('[data-submit-meta]') : null;
+
+        const user = getTelegramUser();
+        const fullName = user
+            ? [user.first_name, user.last_name].filter(Boolean).join(' ').trim()
+            : '';
+        const fallbackName = user && user.username ? `@${user.username}` : 'Гость';
+        const name = fullName || fallbackName;
+
+        if (nameInput && name && !nameInput.value) {
+            this.fillNameValue(nameInput, name);
+        }
+
+        const cachedPhone = window.__tgContactPhone || '';
+        const phoneFromUser = user && (user.phone_number || user.phone) ? (user.phone_number || user.phone) : '';
+        const phone = cachedPhone || phoneFromUser;
+
+        if (phoneInput && phone && !phoneInput.value) {
+            this.fillPhoneValue(phoneInput, phone);
+        }
+
+        const phoneValue = phoneInput ? phoneInput.value : '';
+        if (submitMeta) {
+            submitMeta.textContent = phoneValue ? `${name} • ${phoneValue}` : 'Нужен номер телефона';
+        }
+
+        if (submitButton) {
+            submitButton.disabled = !phoneValue;
+        }
     }
 
     async pollTelegramContact(button) {
@@ -767,6 +800,7 @@ class CheckoutUI {
 
         button.disabled = false;
         button.textContent = 'Заполнить из Telegram';
+        this.updateMiniAppIdentity();
     }
 
     async handleSubmit(e) {
@@ -803,6 +837,14 @@ class CheckoutUI {
                     firstName: user.first_name || '',
                     lastName: user.last_name || ''
                 };
+            }
+        }
+
+        if (isMiniApp) {
+            const phoneValue = order.customer.phone;
+            if (!phoneValue) {
+                alert('Нужен номер телефона из Telegram для оформления заказа.');
+                return;
             }
         }
 
