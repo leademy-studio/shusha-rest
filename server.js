@@ -295,6 +295,13 @@ function formatOrderForTelegram(order) {
         .map((item) => `- ${item.name} (x${item.quantity}) - ${item.price * item.quantity} ₽`)
         .join("\n");
 
+    const discountLabel =
+        order.discountLabel ||
+        (order.telegram
+            ? "Скидка 30% (мини-приложение)"
+            : order.delivery.method === "pickup"
+              ? "Скидка 10% (самовывоз)"
+              : "Скидка");
     const deliveryMethod = order.delivery.method === "pickup" ? "Самовывоз" : "Доставка";
     let deliveryInfo = "";
     if (deliveryMethod === "Доставка") {
@@ -323,7 +330,7 @@ Email: ${order.customer.email || "Не указан"}
 ${itemsText}
 
 *Сумма:* ${order.subtotal} ₽
-*Скидка (самовывоз):* ${order.discount} ₽
+*${discountLabel}:* ${order.discount} ₽
 *Итого:* *${order.total} ₽*
 
 *Получение:* ${deliveryMethod}

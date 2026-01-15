@@ -501,7 +501,7 @@ class CheckoutUI {
                                 <span>Бесплатно</span>
                             </div>
                             <div class="checkout-form__summary-row checkout-form__summary-row--discount" data-discount-row hidden>
-                                <span>Скидка 10% (самовывоз)</span>
+                                <span data-discount-label>Скидка</span>
                                 <span data-discount-amount>−0 ₽</span>
                             </div>
                             <div class="checkout-form__summary-row checkout-form__summary-row--total">
@@ -533,14 +533,16 @@ class CheckoutUI {
         const totalEl = modal.querySelector('[data-summary-total]');
         const discountRow = modal.querySelector('[data-discount-row]');
         const discountAmountEl = modal.querySelector('[data-discount-amount]');
+        const discountLabelEl = modal.querySelector('[data-discount-label]');
 
         const updateDeliverySection = () => {
             const selected = modal.querySelector('input[name="delivery-method"]:checked');
             const isDelivery = selected?.value === 'delivery';
-            const isPickup = selected?.value === 'pickup';
             const subtotal = this.cart.getTotalPrice();
-            const discount = isPickup ? Math.round(subtotal * 0.1) : 0;
+            const discountDetails = this.getDiscountDetails(selected?.value, subtotal);
+            const discount = discountDetails.amount;
             const total = subtotal - discount;
+            const shouldShowDiscount = discount > 0;
 
             deliverySection.classList.toggle('checkout-form__section--hidden', !isDelivery);
             deliverySection.setAttribute('aria-hidden', String(!isDelivery));
@@ -559,9 +561,12 @@ class CheckoutUI {
                 totalEl.textContent = this.formatPrice(total);
             }
             if (discountRow && discountAmountEl) {
-                discountRow.hidden = !isPickup;
-                discountRow.setAttribute('aria-hidden', String(!isPickup));
+                discountRow.hidden = !shouldShowDiscount;
+                discountRow.setAttribute('aria-hidden', String(!shouldShowDiscount));
                 discountAmountEl.textContent = `−${this.formatPrice(discount)}`;
+                if (discountLabelEl && discountDetails.label) {
+                    discountLabelEl.textContent = discountDetails.label;
+                }
             }
         };
 
@@ -580,6 +585,27 @@ class CheckoutUI {
         document.body.appendChild(modal);
         this.prefillFromTelegram();
         this.bindTelegramContact();
+    }
+
+    getDiscountDetails(deliveryMethod, subtotal) {
+        if (isMiniApp) {
+            return {
+                amount: Math.round(subtotal * 0.3),
+                label: 'Скидка 30% (мини-приложение)'
+            };
+        }
+
+        if (deliveryMethod === 'pickup') {
+            return {
+                amount: Math.round(subtotal * 0.1),
+                label: 'Скидка 10% (самовывоз)'
+            };
+        }
+
+        return {
+            amount: 0,
+            label: ''
+        };
     }
 
     open() {
@@ -809,7 +835,8 @@ class CheckoutUI {
         const formData = new FormData(e.target);
         const deliveryMethod = formData.get('delivery-method');
         const subtotal = this.cart.getTotalPrice();
-        const discount = deliveryMethod === 'pickup' ? Math.round(subtotal * 0.1) : 0;
+        const discountDetails = this.getDiscountDetails(deliveryMethod, subtotal);
+        const discount = discountDetails.amount;
         const total = subtotal - discount;
         const order = {
             customer: {
@@ -824,6 +851,7 @@ class CheckoutUI {
             items: this.cart.getItems(),
             subtotal,
             discount,
+            discountLabel: discountDetails.label,
             total,
             timestamp: new Date().toISOString()
         };
