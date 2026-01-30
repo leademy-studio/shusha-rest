@@ -136,6 +136,10 @@ class ShoppingCart {
 const cart = new ShoppingCart();
 const isMiniApp = document.documentElement.dataset.miniApp === "true";
 const catalogHref = isMiniApp ? "telegram.html" : "catalog.html";
+const DELIVERY_FREE_THRESHOLD = 3000;
+const DELIVERY_FEE = 350;
+const GIFT_THRESHOLD = 4500;
+const GIFT_NAME = 'Хачапури по-мигрельски';
 
 const tgApp = typeof Telegram !== "undefined" && Telegram.WebApp ? Telegram.WebApp : null;
 const getTelegramUser = () => (tgApp && tgApp.initDataUnsafe ? tgApp.initDataUnsafe.user : null);
@@ -498,7 +502,11 @@ class CheckoutUI {
                             </div>
                             <div class="checkout-form__summary-row">
                                 <span>Доставка:</span>
-                                <span>Бесплатно</span>
+                                <span data-summary-delivery>Бесплатно</span>
+                            </div>
+                            <div class="checkout-form__summary-row checkout-form__summary-row--gift" data-gift-row hidden>
+                                <span>Подарок:</span>
+                                <span data-gift-label>${GIFT_NAME}</span>
                             </div>
                             <div class="checkout-form__summary-row checkout-form__summary-row--discount" data-discount-row hidden>
                                 <span data-discount-label>Скидка</span>
@@ -531,9 +539,12 @@ class CheckoutUI {
         const commentInput = modal.querySelector('#checkout-comment');
         const subtotalEl = modal.querySelector('[data-summary-subtotal]');
         const totalEl = modal.querySelector('[data-summary-total]');
+        const deliveryEl = modal.querySelector('[data-summary-delivery]');
         const discountRow = modal.querySelector('[data-discount-row]');
         const discountAmountEl = modal.querySelector('[data-discount-amount]');
         const discountLabelEl = modal.querySelector('[data-discount-label]');
+        const giftRow = modal.querySelector('[data-gift-row]');
+        const giftLabelEl = modal.querySelector('[data-gift-label]');
 
         const updateDeliverySection = () => {
             const selected = modal.querySelector('input[name="delivery-method"]:checked');
@@ -541,8 +552,11 @@ class CheckoutUI {
             const subtotal = this.cart.getTotalPrice();
             const discountDetails = this.getDiscountDetails(selected?.value, subtotal);
             const discount = discountDetails.amount;
-            const total = subtotal - discount;
+            const deliveryDetails = this.getDeliveryDetails(selected?.value, subtotal);
+            const giftDetails = this.getGiftDetails(subtotal);
+            const total = subtotal - discount + deliveryDetails.fee;
             const shouldShowDiscount = discount > 0;
+            const shouldShowGift = giftDetails.available;
 
             deliverySection.classList.toggle('checkout-form__section--hidden', !isDelivery);
             deliverySection.setAttribute('aria-hidden', String(!isDelivery));
@@ -557,6 +571,9 @@ class CheckoutUI {
             if (subtotalEl) {
                 subtotalEl.textContent = this.formatPrice(subtotal);
             }
+            if (deliveryEl) {
+                deliveryEl.textContent = deliveryDetails.label;
+            }
             if (totalEl) {
                 totalEl.textContent = this.formatPrice(total);
             }
@@ -566,6 +583,13 @@ class CheckoutUI {
                 discountAmountEl.textContent = `−${this.formatPrice(discount)}`;
                 if (discountLabelEl && discountDetails.label) {
                     discountLabelEl.textContent = discountDetails.label;
+                }
+            }
+            if (giftRow && giftLabelEl) {
+                giftRow.hidden = !shouldShowGift;
+                giftRow.setAttribute('aria-hidden', String(!shouldShowGift));
+                if (shouldShowGift) {
+                    giftLabelEl.textContent = giftDetails.label;
                 }
             }
         };
@@ -604,6 +628,41 @@ class CheckoutUI {
 
         return {
             amount: 0,
+            label: ''
+        };
+    }
+
+    getDeliveryDetails(deliveryMethod, subtotal) {
+        if (deliveryMethod !== 'delivery') {
+            return {
+                fee: 0,
+                label: 'Самовывоз'
+            };
+        }
+
+        if (subtotal >= DELIVERY_FREE_THRESHOLD) {
+            return {
+                fee: 0,
+                label: 'Бесплатно'
+            };
+        }
+
+        return {
+            fee: DELIVERY_FEE,
+            label: this.formatPrice(DELIVERY_FEE)
+        };
+    }
+
+    getGiftDetails(subtotal) {
+        if (subtotal >= GIFT_THRESHOLD) {
+            return {
+                available: true,
+                label: GIFT_NAME
+            };
+        }
+
+        return {
+            available: false,
             label: ''
         };
     }
@@ -837,7 +896,9 @@ class CheckoutUI {
         const subtotal = this.cart.getTotalPrice();
         const discountDetails = this.getDiscountDetails(deliveryMethod, subtotal);
         const discount = discountDetails.amount;
-        const total = subtotal - discount;
+        const deliveryDetails = this.getDeliveryDetails(deliveryMethod, subtotal);
+        const giftDetails = this.getGiftDetails(subtotal);
+        const total = subtotal - discount + deliveryDetails.fee;
         const order = {
             customer: {
                 name: formData.get('name'),
@@ -845,13 +906,15 @@ class CheckoutUI {
                 email: formData.get('email')
             },
             delivery: {
-                method: deliveryMethod
+                method: deliveryMethod,
+                fee: deliveryDetails.fee
             },
             payment: formData.get('payment'),
             items: this.cart.getItems(),
             subtotal,
             discount,
             discountLabel: discountDetails.label,
+            gift: giftDetails.available ? { name: giftDetails.label } : null,
             total,
             timestamp: new Date().toISOString()
         };
